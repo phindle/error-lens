@@ -27,38 +27,35 @@ export function activate(context: vscode.ExtensionContext) {
     // borderStyle: `${borderStyle}`, //TODO: file bug, this shouldn't throw a lint error.
     // borderColor
 
-    // Create a decorator type that we use to decorate 'guid: <guid-value>' text items
-    // Options reference @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
-    const errorLensDecorationStyleError = vscode.window.createTextEditorDecorationType({
+    // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
+
+    // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
+    // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
+    const errorLensDecorationStyleError : vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: "rgba(240,10,0,0.4)"
     });
-    const errorLensDecorationStyleWarning = vscode.window.createTextEditorDecorationType({
+
+    const errorLensDecorationStyleWarning : vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: "rgba(240,30,120,0.4)"
     });
-    const errorLensDecorationStyleInfo = vscode.window.createTextEditorDecorationType({
+
+    const errorLensDecorationStyleInfo : vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: "rgba(240,160,0,0.5)"
     });
-    const errorLensDecorationStyleHint = vscode.window.createTextEditorDecorationType({
+
+    const errorLensDecorationStyleHint : vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: "rgba(20,60,0,0.5)"
     });
-    // const errorLensDecorationStyle = vscode.window.createTextEditorDecorationType({
-    //     borderWidth: "1px",
-    //     borderStyle: "solid",
-    //     overviewRulerColor: "orange",
-    //     overviewRulerLane: vscode.OverviewRulerLane.Left,
-    //     cursor: "pointer",
-    //     backgroundColor: "rgba(240,30,0,0.7)"
-    // });
 
     // Create a new GuidMap - this will parse all .meta files in the workspace
-    const guidMap = new GuidMap();
+    // const guidMap = new GuidMap();
 
     // Create a new FileIdMap - this will parse all <TODO> files in the workspace
-    const fileIdMap = new FileIdMap();
+    // const fileIdMap = new FileIdMap();
 
     let activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
@@ -78,11 +75,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions);
 
-	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(e => updateStatusBar()));
-	context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => updateStatusBar()));
-	context.subscriptions.push(vscode.window.onDidChangeTextEditorViewColumn(e => updateStatusBar()));
-	context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(e => updateStatusBar()));
-	context.subscriptions.push(vscode.workspace.onDidCloseTextDocument(e => updateStatusBar()));
+	// context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(e => updateStatusBar()));
+	// context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => updateStatusBar()));
+	// context.subscriptions.push(vscode.window.onDidChangeTextEditorViewColumn(e => updateStatusBar()));
+	// context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(e => updateStatusBar()));
+	// context.subscriptions.push(vscode.workspace.onDidCloseTextDocument(e => updateStatusBar()));
 
     // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
     /* tslint:disable */
@@ -97,26 +94,26 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
 
-    /**
-     * Update the Visual Studio Code status bar
-     * 
-     * @returns 
-     */
-    function updateStatusBar() {
-        const editor: vscode.TextEditor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return; // No open text editor
-        }
+    // /**
+    //  * Update the Visual Studio Code status bar
+    //  * 
+    //  * @returns 
+    //  */
+    // function updateStatusBar() {
+    //     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
+    //     if (!editor) {
+    //         return; // No open text editor
+    //     }
 
-        const currentLine: number = editor.selection.active.line;
-        const textLine: vscode.TextLine = editor.document.lineAt(currentLine);
-        const textLineString = textLine.text;
-        if (!activeEditor) {
-            return;
-        }
+    //     const currentLine: number = editor.selection.active.line;
+    //     const textLine: vscode.TextLine = editor.document.lineAt(currentLine);
+    //     const textLineString = textLine.text;
+    //     if (!activeEditor) {
+    //         return;
+    //     }
     
-        guidMap.tryShowGuidReference(textLineString);
-    }
+    //     guidMap.tryShowGuidReference(textLineString);
+    // }
 
     /**
      * TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
@@ -270,7 +267,7 @@ export function activate(context: vscode.ExtensionContext) {
     // });
 
     // context.subscriptions.push(disposableSayHello);
-    context.subscriptions.push(guidMap);
+    // context.subscriptions.push(guidMap);
 }
 
 // this method is called when your extension is deactivated
@@ -462,7 +459,7 @@ class GuidMap {
             // console.log( 'guid of ' + dir + file + ' = ' + result[1] );
             if (this.mapGuidsToFiles[result[1]] !== undefined) {
                 // console.log("   guid: " + result[1] + " -> " + this.mapGuidsToFiles[result[1]]);
-                this.updateStatusBarWithGuidRef(result[1]);
+                // this.updateStatusBarWithGuidRef(result[1]);
                 // vscode.window.showInformationMessage('GUID ' + result[1] + ' -> ' + mapGuidsToFiles[result[1]]);
             }
             else {
@@ -475,308 +472,9 @@ class GuidMap {
         }
     }
 
-    /**
-     * 
-     * 
-     * @param {string} guid 
-     * @memberof GuidMap
-     */
-    public updateStatusBarWithGuidRef(guid: string) {
-        // Get the current text editor
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            this._statusBarItem.hide();
-            return;
-        }
-
-        let filename = this.mapGuidsToFiles[guid];
-        if (filename !== null && filename.length >= 1) {
-            filename = filename.replace(/\\/g, "/");
-            this._statusBarItem.text = "Unity Guid -> File: " + filename;
-        }
-        else {
-            this._statusBarItem.text = "Unity GUID ERROR!";
-        }
-
-        this._statusBarItem.show();
-    }
-
     dispose() {
         // this._statusBarItem.dispose();
     }
 }   // class GuidMap
 
-
-/**
- * A class which generates a dictionary of FileID values to strings about the Unity objects.
- * 
- * @class FileIdMap
- */
-class FileIdMap {
-    // This is a multi-dimensional object array (https://stackoverflow.com/questions/4329092/multi-dimensional-object-arrays-in-javascript)
-    // It has 2 keys:
-    // 1) The file this fileID was parsed from
-    // 2) The fileID: within the file
-    private mapFileIdsToInfo = {};
-
-    /**
-     * Creates an instance of FileIdMap.
-     * @memberof FileIdMap
-     */
-    constructor() {
-        const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-        const fsPath: string = workspaceFolder.uri.fsPath;
-
-        // const testDict = {};
-        // testDict["fileA"] = "file-1";
-        // testDict["fileB"] = "file-2";
-        // testDict["fileC"] = "file-3";
-        
-        // if (testDict["fileA"]) {
-        //     console.log("1. FileIdMap constructor(): testDict[fileA] is something");
-        // }
-        // else {
-        //     console.log("1. FileIdMap constructor(): testDict[fileA] is nothing");
-        //     testDict["fileA"] = {};
-        // }
-
-
-        // if (testDict["fileA"]) {
-        //     console.log("2. FileIdMap constructor(): testDict[fileA] is something");
-        // }
-        // else {
-        //     console.log("2. FileIdMap constructor(): testDict[fileA] is nothing");
-        // }
-
-        // testDict["fileA"]["fileID-1"] = "one";
-        // testDict["fileA"]["fileID-2"] = "two";
-        // testDict["fileA"]["fileID-3"] = "three";
-
-        // testDict["fileB"] = {};
-        // testDict["fileB"]["fileID-100"] = "one hundred";
-        // testDict["fileB"]["fileID-200"] = "two hundred";
-        // testDict["fileB"]["fileID-300"] = "three hundred";
-
-        // if (testDict["fileA"]) {
-        //     console.log("3. FileIdMap constructor(): testDict[fileA] is something");
-        // }
-        // else {
-        //     console.log("3. FileIdMap constructor(): testDict[fileA] is nothing");
-        // }
-
-        // TESTING
-        // TESTING
-        // TESTING
-        // for (const key in testDict) {
-        //     for (const secondKey in testDict[key]) {
-        //         console.log("  -  FileIdMap constructor(): testDict[" + key + "][" + secondKey + "] = " + testDict[key][secondKey]);
-        //     }
-        // }
-        // TESTING
-        // TESTING
-        // TESTING
-
-        console.log("FileIdMap constructor. Scanning workspace path: " + fsPath);
-        this.parseUnityFileFileIds(fsPath + "/", null);
-
-        // TESTING
-        // TESTING
-        // TESTING
-        // for (const fileKey in this.mapFileIdsToInfo) {
-        //     for (const fileIDKey in this.mapFileIdsToInfo[fileKey]) {
-        //         console.log("  -  FileIdMap constructor(): this.mapFileIdsToInfo[" + fileKey + "][" + fileIDKey + "] = " + this.mapFileIdsToInfo[fileKey][fileIDKey]);
-        //     }
-        // }
-        // TESTING
-        // TESTING
-        // TESTING
-    }
-
-    
-    /**
-     * Recursive function, iterating into directory 'dir'
-     * 
-     * @memberof FileIdMap
-     */
-    public parseUnityFileFileIds = function (dir, filelist) {
-        const self = this;
-        // console.log("parseUnityFileFileIds(), dir = " + dir + ", and filelist = " + filelist);
-
-        const fs = require("fs");
-        const path = require("path");
-
-        // console.log('parseUnityFileFileIds() - parsing folder: ' + dir );
-        const files = fs.readdirSync(dir);
-
-        filelist = filelist || [];
-
-        files.forEach(function (file) {
-            // Ignore .git directories
-            if (dir.includes(".git")) {
-                return filelist;
-            }
-
-            if (fs.statSync(dir + file).isDirectory()) {
-                // This is a directory - walk into it
-                self.parseUnityFileFileIds(dir + file + "/", filelist, self.mapFileIdsToInfo);
-            }
-            else {
-                // This is a file
-                filelist.push(file);
-
-                // console.log("FileIdMap.parseUnityFileFileIds(): found file: " + (dir + file));
-
-                // Parse .unity files, searching for guid: and putting guid values into a map
-                // if (path.extname(file) === ".meta") {
-                const fileExtension = path.extname(file);
-
-                if (fileExtension === ".unity" || fileExtension === ".prefab") {
-                    // console.log("FileIdMap.parseUnityFileFileIds(): scanning .unity file: " + file + " (path = " + dir + file + ")");
-
-                    // e.g. /home/phil/git/Unity_Projects/UnityExample/Assets/Scripts/Test.cs.meta
-                    // or:  c:\Users\phil\git\Unity_Projects\UnityExample/Assets/Scripts/Test.cs.meta
-                    const fullPath = dir + file;
-
-                    // We want to strip the path prior to '/Assets/', leaving the string after /Assets/
-                    const pathAfterAssets = GetPathAfterAssets(fullPath);
-                    console.log("FileIdMap.parseUnityFileFileIds(): scanning .unity file: " + pathAfterAssets );
-
-
-                    // Read in the file, splitting by newline (Converting Windows EOLs to *nix EOLs)
-                    // https://stackoverflow.com/questions/6831918/node-js-read-a-text-file-into-an-array-each-line-an-item-in-the-array
-                    const linesInFile = fs.readFileSync(dir + file).toString().replace(/\r\n/g, "\n").split("\n");
-
-                    // const fileIdReferenceToRegEx = /{fileID: (\w+)}/;       // This references a Unity Object.
-                    const fileIdDefinitionRegEx = /--- !u!(\w+) &(\w+)/;       // fileIDs are defined like this: --- !u!1001 &1433247656
-
-                    const numLinesInFile = linesInFile.length;
-
-                    for (let lineNumber = 0; lineNumber < numLinesInFile; lineNumber++) {
-                        const lineString = linesInFile[lineNumber];
-                        const matchedFileIdValue = lineString.match(fileIdDefinitionRegEx);
-
-                        if (matchedFileIdValue !== null) {
-                            // regex matched, so we found '{fileID: <characters>}'
-                            // matchedFileIdValue[0] = source i.e. lineString
-                            // matchedFileIdValue[1] = captured part #1, i.e. the Unity class: (\w+)
-                            // matchedFileIdValue[2] = captured part #2, i.e. the fileID (\w+)
-
-                            // console.log("found fileID: definition @line " + lineNumber + ": " + matchedFileIdValue[0] + ",   + " + matchedFileIdValue[1] + ",   + " + matchedFileIdValue[2]);
-
-                            const fileID = matchedFileIdValue[2];
-                            if (fileID === undefined || fileID === "") {
-                                console.error("parseUnityFileFileIds(): !ERROR! fileID is undefined or empty" );
-                                continue;           // Skip this for() iteration.
-                            }
-                            const unityObjectType = linesInFile[lineNumber + 1];
-
-                            if (self.mapFileIdsToInfo[pathAfterAssets]) {
-                                // mapFileIdsToInfo[pathAfterAssets] is already a dictionary
-                            }
-                            else {
-                                // This path isn't yet in the mapFileIdsToInfo map. Do a {} to create a new dictionary.
-                                // console.log("... file: '" + pathAfterAssets + "' isn't yet in the map." );
-                                self.mapFileIdsToInfo[pathAfterAssets] = {};
-                            }
-
-                            if (self.mapFileIdsToInfo[pathAfterAssets][fileID] === undefined ) {
-                                self.mapFileIdsToInfo[pathAfterAssets][fileID] = unityObjectType;
-
-                                // e.g.: mapFileIdsToInfo[Scenes/MainScene.unity][1294694338] = GameObject:
-
-                                // console.log("parseUnityFileFileIds(): mapFileIdsToInfo[" + pathAfterAssets + "][" + fileID + "] = " + self.mapFileIdsToInfo[pathAfterAssets][fileID] );
-                            }
-                            else {
-                                console.error("parseUnityFileFileIds(): !ERROR! mapFileIdsToInfo[" + pathAfterAssets + "][" +  fileID + "] already contains: " + self.mapFileIdsToInfo[pathAfterAssets][fileID] );
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        return filelist;
-    };
-
-    /**
-     * Wrapper which safely gets the filename from the supplied guid.
-     * If the guid isn't valid (null or undefined) the returned string indicates an error occurred.
-     * 
-     * @param {string} guid A guid
-     * @returns {string} The filename which the 'guid' argument refers to.
-     * @memberof GuidMap
-     */
-    // public getReferencedFileFromGuid(guid: string): string {
-    //     if (guid !== null && guid !== undefined) {
-    //         return (this.mapGuidsToFiles[guid]);
-    //     }
-    //     return ("getReferencedFileFromGuid() - null or undefined guid");
-    // }
-
-    /**
-     * Given some text, if it contains "guid: <some-guid>", the reference to said Guid
-     * will be shown in the status bar.
-     * 
-     * @param {string} lineOfEditorText The whole line of text the cursor is currently on.
-     * @memberof GuidMap
-     */
-    // public tryShowGuidReference(lineOfEditorText: string) {
-    //     // Create _statusBarItem if needed
-    //     if (!this._statusBarItem) {
-    //         console.log("tryShowGuidReference() - doing createStatusBarItem()");
-    //         this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    //     }
-
-    //     const regex = /guid: (\w+)/;
-    //     const result = lineOfEditorText.match(regex);
-    //     if (result !== null) {
-    //         // console.log("tryShowGuidReference() - line contains guid:");
-
-    //         // regex matched, so we found 'guid: <long hex sequence>'
-    //         // console.log( 'guid of ' + dir + file + ' = ' + result[1] );
-    //         if (this.mapGuidsToFiles[result[1]] !== undefined) {
-    //             // console.log("   guid: " + result[1] + " -> " + this.mapGuidsToFiles[result[1]]);
-    //             this.updateStatusBarWithGuidRef(result[1]);
-    //             // vscode.window.showInformationMessage('GUID ' + result[1] + ' -> ' + mapGuidsToFiles[result[1]]);
-    //         }
-    //         else {
-    //             console.error("   guid: " + result[1] + " -> not found!");
-    //         }
-    //     }
-    //     else {
-    //         this._statusBarItem.hide();
-    //         // console.log("tryShowGuidReference() - line does not contain guid:");
-    //     }
-    // }
-}   // class FileIdMap
-
-
-// 'use strict';
-// // The module 'vscode' contains the VS Code extensibility API
-// // Import the module and reference it with the alias vscode in your code below
-// import * as vscode from 'vscode';
-
-// // this method is called when your extension is activated
-// // your extension is activated the very first time the command is executed
-// export function activate(context: vscode.ExtensionContext) {
-
-//     // Use the console to output diagnostic information (console.log) and errors (console.error)
-//     // This line of code will only be executed once when your extension is activated
-//     console.log('Congratulations, your extension "errorlens" is now active!');
-
-//     // The command has been defined in the package.json file
-//     // Now provide the implementation of the command with  registerCommand
-//     // The commandId parameter must match the command field in package.json
-//     let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-//         // The code you place here will be executed every time your command is executed
-
-//         // Display a message box to the user
-//         vscode.window.showInformationMessage('Hello World!');
-//     });
-
-//     context.subscriptions.push(disposable);
-// }
-
-// // this method is called when your extension is deactivated
-// export function deactivate() {
-// }
 
