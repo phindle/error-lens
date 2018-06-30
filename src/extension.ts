@@ -35,32 +35,24 @@ export function activate(context: vscode.ExtensionContext) {
         backgroundColor: "rgba(20,60,0,0.5)"
     });
 
-    let activeEditor = vscode.window.activeTextEditor;
-
     // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
     vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => updateErrorDecorations(diagnosticChangeEvent) );
 
-    // var timeout = null;         // tslint:disable-line
-    // function triggerUpdateDecorations() {
-    //     if (timeout) {
-    //         clearTimeout(timeout);
-    //     }
-    //     timeout = setTimeout(updateDecorations, 500);
-    // }
 
 
     /**
-     * TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-     * TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-     * TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-     * TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-     * 
-     * @returns 
+     * Invoked by onDidChangeDiagnostics() when the language diagnostics change.
+     *
+     * @param {vscode.DiagnosticChangeEvent} diagnosticChangeEvent - Contains event data pertaining to the change in diagnostics.
      */
-    function updateErrorDecorations(diagnosticChangeEvent: vscode.workspace.DiagnosticChangeEvent) {
-        if (!activeEditor) {
+    function updateErrorDecorations(diagnosticChangeEvent: vscode.DiagnosticChangeEvent) {
+        if( !vscode.window ) {
             return;
         }
+        if( !vscode.window.activeTextEditor ) {
+            return;
+        }
+        let activeTextEditor = vscode.window.activeTextEditor;
 
         const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
@@ -68,49 +60,22 @@ export function activate(context: vscode.ExtensionContext) {
         const errorLensDecorationOptionsHint: vscode.DecorationOptions[] = [];
 
         for (const uri of diagnosticChangeEvent.uris) {
-            if ( uri.fsPath === vscode.window.activeTextEditor.document.uri.fsPath ) {
-                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>> uri.fsPath = " + uri.fsPath);
-                console.log(">> window.activeTextEditor = " + vscode.window.activeTextEditor.document.uri.fsPath);
+            // Only update decorations for the active text editor.
+            if ( uri.fsPath === activeTextEditor.document.uri.fsPath ) {
+                console.log("- uri.fsPath = " + uri.fsPath);
+                console.log("- window.activeTextEditor = " + activeTextEditor.document.uri.fsPath);
 
-                // var diagnosticArray: vscode.workspace.Diagnostic = vscode.languages.getDiagnostics( uri );
-                const diagnosticArray = vscode.languages.getDiagnostics( uri );
-                let diagnostic: vscode.Diagnostic;
+                const diagnosticArray : vscode.Diagnostic[] = vscode.languages.getDiagnostics( uri );
+
+                // Iterate over each diagnostic flagged in this file (uri). For each one, 
+                let diagnostic : vscode.Diagnostic;
+
                 for ( diagnostic of diagnosticArray )
                 {
-                    let severity = "";
-                    switch (diagnostic.severity) {
-                        case 0:
-                            severity = "Error";
-                            break;
-                        case 1:
-                            severity = "Warning";
-                            break;
-                        case 2:
-                            severity = "Information";
-                            break;
-                        case 3:
-                            severity = "Hint";
-                            break;
-                    }
-                    console.log(">> diagnostic.message = " + diagnostic.message);
-                    // diagnostic.source seems to generally be undefined. Ignore it.
-                    console.log(">> diagnostic.severity = " + severity);
-                    console.log(">> diagnostic.range.start.character = " + diagnostic.range.start.character);
-                    console.log(">> diagnostic.range.end.character = " + diagnostic.range.end.character);
-                    console.log(">> diagnostic.range.start.line = " + diagnostic.range.start.line );
-
-                    const debugInfo = diagnostic.message + "\nSeverity = " + severity + "\nstart.line = " + diagnostic.range.start.line + "\nend.line = " + diagnostic.range.end.line;
-
-                    // See type 'DecorationOptions'
-                    // const diagnosticDecorationOptions = {
-                    //     range: new vscode.Range(diagnostic.range.start, diagnostic.range.end),
-                    //     hoverMessage: debugInfo
-                    // };
-                    // const diagnosticDecorationOptions = {
-                    //     range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
-                    // };
-                    const diagnosticDecorationOptions = {
-                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.start)
+                    // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
+                    const diagnosticDecorationOptions : vscode.DecorationOptions = {
+                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
+                        // hoverMessage: hoverStringHere
                     };
 
                     switch (diagnostic.severity) {
@@ -135,10 +100,10 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
-        activeEditor.setDecorations(errorLensDecorationStyleError, errorLensDecorationOptionsError);
-        activeEditor.setDecorations(errorLensDecorationStyleWarning, errorLensDecorationOptionsWarning);
-        activeEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
-        activeEditor.setDecorations(errorLensDecorationStyleHint, errorLensDecorationOptionsHint);
+        activeTextEditor.setDecorations(errorLensDecorationStyleError, errorLensDecorationOptionsError);
+        activeTextEditor.setDecorations(errorLensDecorationStyleWarning, errorLensDecorationOptionsWarning);
+        activeTextEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
+        activeTextEditor.setDecorations(errorLensDecorationStyleHint, errorLensDecorationOptionsHint);
     }
 
     // The command has been defined in the package.json file
