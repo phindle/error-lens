@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    let _statusBarItem: vscode.StatusBarItem;
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
@@ -52,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
         if( !vscode.window.activeTextEditor ) {
             return;
         }
-        let activeTextEditor = vscode.window.activeTextEditor;
+        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
 
         const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
@@ -62,8 +63,8 @@ export function activate(context: vscode.ExtensionContext) {
         for (const uri of diagnosticChangeEvent.uris) {
             // Only update decorations for the active text editor.
             if ( uri.fsPath === activeTextEditor.document.uri.fsPath ) {
-                console.log("- uri.fsPath = " + uri.fsPath);
-                console.log("- window.activeTextEditor = " + activeTextEditor.document.uri.fsPath);
+                // console.log("- uri.fsPath = " + uri.fsPath);
+                // console.log("- window.activeTextEditor = " + activeTextEditor.document.uri.fsPath);
 
                 const diagnosticArray : vscode.Diagnostic[] = vscode.languages.getDiagnostics( uri );
 
@@ -104,7 +105,53 @@ export function activate(context: vscode.ExtensionContext) {
         activeTextEditor.setDecorations(errorLensDecorationStyleWarning, errorLensDecorationOptionsWarning);
         activeTextEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
         activeTextEditor.setDecorations(errorLensDecorationStyleHint, errorLensDecorationOptionsHint);
+
+        let numErrors = errorLensDecorationOptionsError.length;
+        let numWarnings = errorLensDecorationOptionsWarning.length;
+        if( numErrors + numWarnings === 0 )
+        {
+            updateStatusBar("ErrorLens: No errors or warnings", "");
+        }
+        else
+        {
+            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s). $(bug)", "rgba(250, 100, 100, 1.0)" );
+        }
     }
+
+
+
+    /**
+     * Update the Visual Studio Code status bar
+     *
+     * @param {string} statusBarText - Text to show in the Status Bar.
+     * @param {string} textColor - Colour as string, e.g. "rgba(255, 255, 255, 1.0), or "" to use standard text colour.
+     * @returns
+     */
+    function updateStatusBar( statusBarText : string, textColor : string ) {
+        // Create _statusBarItem if needed
+        if (!_statusBarItem) {
+            _statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        }
+
+        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if (!activeTextEditor) {
+            // No open text editor
+            _statusBarItem.hide();
+            return;
+        }
+
+        _statusBarItem.text = statusBarText;
+        if( textColor !== "")
+        {
+            _statusBarItem.color = textColor;
+        }
+        else
+        {
+            _statusBarItem.color = undefined;
+        }
+        _statusBarItem.show();
+    }
+
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
