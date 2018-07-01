@@ -9,8 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
     let _statusBarItem: vscode.StatusBarItem;
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "errorlens" is now active!');
+    console.log('Visual Studio Code Extension "errorlens" is now active');
 
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
 
@@ -18,22 +17,22 @@ export function activate(context: vscode.ExtensionContext) {
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     const errorLensDecorationStyleError: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,10,0,0.4)"
+        backgroundColor: "rgba(240,10,0,0.3)"
     });
 
     const errorLensDecorationStyleWarning: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,30,120,0.4)"
+        backgroundColor: "rgba(240,30,120,0.3)"
     });
 
     const errorLensDecorationStyleInfo: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,160,0,0.5)"
+        backgroundColor: "rgba(240,160,0,0.3)"
     });
 
     const errorLensDecorationStyleHint: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(20,60,0,0.5)"
+        backgroundColor: "rgba(20,60,0,0.3)"
     });
 
     // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
@@ -44,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * Invoked by onDidChangeDiagnostics() when the language diagnostics change.
      *
-     * @param {vscode.DiagnosticChangeEvent} diagnosticChangeEvent - Contains event data pertaining to the change in diagnostics.
+     * @param {vscode.DiagnosticChangeEvent} diagnosticChangeEvent - Contains info about the change in diagnostics.
      */
     function updateErrorDecorations(diagnosticChangeEvent: vscode.DiagnosticChangeEvent) {
         if( !vscode.window ) {
@@ -73,11 +72,65 @@ export function activate(context: vscode.ExtensionContext) {
 
                 for ( diagnostic of diagnosticArray )
                 {
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+                    // let testString = "TESTING 1..2..3..";
+                    // let diagnosticLine = diagnostic.range.start.line;
+                    // let diagnosticStartChar = diagnostic.range.end.character;
+                    // let diagnosticEndChar = diagnosticStartChar + testString.length;
+
+                    // let testRange = new vscode.Range( diagnosticLine, diagnosticStartChar, diagnosticLine, diagnosticEndChar );
+                    // const test_diagnosticDecorationOptions : vscode.DecorationOptions = {
+                    //     range: testRange
+                    //     // hoverMessage: hoverStringHere
+                    // };
+                    // test_diagnosticDecorationOptions.
+
+                    let diagnosticSource = "";
+                    if( diagnostic.source )
+                    {
+                        diagnosticSource = "[" + diagnostic.source + "] ";
+                    }
+
+                    let severityString;
+                    switch (diagnostic.severity) {
+                        // Error
+                        case 0:
+                            severityString = "Error: ";
+                            break;
+                        // Warning
+                        case 1:
+                            severityString = "Warning: ";
+                            break;
+                        // Info
+                        case 2:
+                            severityString = "Info: ";
+                            break;
+                        // Hint
+                        case 3:
+                            severityString = "Hint: ";
+                            break;
+                    }
+
+                    const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
+                        after: {
+                            contentText: diagnosticSource + severityString + diagnostic.message,
+                            fontStyle: "italic",
+                            fontWeight: "normal",
+                            margin: "100px"
+                        }
+                    };
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+                    console.log( severityString + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
+
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
-                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
+                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end),
+                        renderOptions: decInstanceRenderOptions
                         // hoverMessage: hoverStringHere
                     };
+
 
                     switch (diagnostic.severity) {
                         // Error
@@ -101,6 +154,10 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
+        // activeTextEditor.setDecorations( decorationType : TextEditorDecorationType, rangesOrOptions : Range[] | DecorationOptions[] );
+        //                                                               ^ what we're using for this
+        //                                                                                                                  ^ what we're using for this
+
         activeTextEditor.setDecorations(errorLensDecorationStyleError, errorLensDecorationOptionsError);
         activeTextEditor.setDecorations(errorLensDecorationStyleWarning, errorLensDecorationOptionsWarning);
         activeTextEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
@@ -114,7 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         else
         {
-            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s). $(bug)", "rgba(250, 100, 100, 1.0)" );
+            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s). $(bug)", "rgba(250, 100, 20, 1.0)" );
         }
     }
 
@@ -139,16 +196,15 @@ export function activate(context: vscode.ExtensionContext) {
             _statusBarItem.hide();
             return;
         }
-
         _statusBarItem.text = statusBarText;
-        if( textColor !== "")
-        {
-            _statusBarItem.color = textColor;
-        }
-        else
-        {
-            _statusBarItem.color = undefined;
-        }
+        // if( textColor !== "")
+        // {
+        //     _statusBarItem.color = textColor;
+        // }
+        // else
+        // {
+        //     _statusBarItem.color = undefined;
+        // }
         _statusBarItem.show();
     }
 
