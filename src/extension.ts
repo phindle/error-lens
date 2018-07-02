@@ -17,22 +17,22 @@ export function activate(context: vscode.ExtensionContext) {
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     const errorLensDecorationStyleError: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,10,0,0.3)"
+        backgroundColor: "rgba(240,10,0,0.5)"
     });
 
     const errorLensDecorationStyleWarning: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,30,120,0.3)"
+        backgroundColor: "rgba(180,150,0,0.5)"
     });
 
     const errorLensDecorationStyleInfo: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,160,0,0.3)"
+        backgroundColor: "rgba(240,200,0,0.5)"
     });
 
     const errorLensDecorationStyleHint: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(20,60,0,0.3)"
+        backgroundColor: "rgba(20,100,0,0.5)"
     });
 
     // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
@@ -47,15 +47,18 @@ export function activate(context: vscode.ExtensionContext) {
         if( !vscode.window ) {
             return;
         }
-        if( !vscode.window.activeTextEditor ) {
+
+        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if( !activeTextEditor ) {
             return;
         }
-        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
 
         const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsInfo: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsHint: vscode.DecorationOptions[] = [];
+        let numErrors = 0;
+        let numWarnings = 0;
 
         for (const uri of diagnosticChangeEvent.uris) {
             // Only update decorations for the active text editor.
@@ -69,37 +72,41 @@ export function activate(context: vscode.ExtensionContext) {
 
                 // The aggregatedDiagnostics object will contain one or more objects, each object being keyed by "lineN",
                 // where N is the source line where one or more diagnostics are being reported.
-                // Each object which is keyed by "lineN" will contain one, or more, severityAndMessage[] array of objects.
+                // Each object which is keyed by "lineN" will contain one or more singleDiagnostics[] array of objects.
                 // This facilitates gathering info about lines which contain more than one diagnostic.
                 // {
                 //     line28: {
                 //         line: 28,
-                //         severityAndMessages: [
+                //         singleDiagnostics: [
                 //             {
                 //                 severity: 1,                                  // 1 => Warning
-                //                 message: "Unused Variable 'example'"
+                //                 message: "Unused Variable 'example'",
+                //                 range: <range>
                 //             }
                 //         ]
                 //     },
                 //     line67: {
                 //         line: 67,
-                //         severityAndMessages: [
+                //         singleDiagnostics: [
                 //             {
                 //                 severity: 0,                                  // 0 => Error
                 //                 message: "Missing semi-colon'"
+                //                 range: <range>
                 //             },
                 //             {
                 //                 severity: 0,                                  // 0 => Error
                 //                 message: "Unknown method 'XYZ()'"
+                //                 range: <range>
                 //             }
                 //         ]
                 //     },
                 //     line93: {
                 //         line: 93,
-                //         severityAndMessages: [
+                //         singleDiagnostics: [
                 //             {
                 //                 severity: 0,                                  // 0 => Error
                 //                 message: "Missing argument to function Example()"
+                //                 range: <range>
                 //             }
                 //         ]
                 //     }
@@ -114,8 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
                     let diagnosticLine = diagnostic.range.start.line;
                     let key = "line" + diagnosticLine;
 
-                    // todo - maybe change the name of this var, because it now has start and end...
-                    let severityAndMessage = {
+                    let singleDiagnostic = {
                         severity: diagnostic.severity,
                         message: diagnostic.message,
                         range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
@@ -123,16 +129,29 @@ export function activate(context: vscode.ExtensionContext) {
 
                     if( aggregatedDiagnostics[key] )
                     {
-                        // Already added an object for this key, so add onto the severityAndMessages[] array.
-                        aggregatedDiagnostics[key].severityAndMessages.push( severityAndMessage );
+                        // Already added an object for this key, so add onto the singleDiagnostics[] array.
+                        aggregatedDiagnostics[key].singleDiagnostics.push( singleDiagnostic );
                     }
                     else
                     {
-                        // Create a new object for this key, specifying the line: and a severityAndMessage[] array
+                        // Create a new object for this key, specifying the line: and a singleDiagnostics[] array
                         aggregatedDiagnostics[key] = {
                             line: diagnosticLine,
-                            severityAndMessages: [ severityAndMessage ]
+                            singleDiagnostics: [ singleDiagnostic ]
                         };
+                    }
+
+                    switch (diagnostic.severity)
+                    {
+                        case 0:
+                            numErrors += 1;
+                            break;
+
+                        case 1:
+                            numWarnings += 1;
+                            break;
+
+                        // Ignore other severities.
                     }
                 }
 
@@ -145,15 +164,15 @@ export function activate(context: vscode.ExtensionContext) {
 
                     let messagePrefix : string;
 
-                    if( aggregatedDiagnostic.severityAndMessages.length > 1 )
+                    if( aggregatedDiagnostic.singleDiagnostics.length > 1 )
                     {
                         // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
-                        messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.severityAndMessages.length + ": ";
+                        messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.singleDiagnostics.length + ": ";
                     }
                     else
                     {
                         // If only 1 diagnostic for this source line, show the diagnostic severity
-                        switch (aggregatedDiagnostic.severityAndMessages[0].severity)
+                        switch (aggregatedDiagnostic.singleDiagnostics[0].severity)
                         {
                             case 0:
                                 messagePrefix = "Error: ";
@@ -173,13 +192,12 @@ export function activate(context: vscode.ExtensionContext) {
                                 break;
                         }
                     }
-                    // console.log("num diagnostics on line " + aggregatedDiagnostic.line + " = " + aggregatedDiagnostic.severityAndMessages.length );
 
                     // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
                     // after the source-code line in the editor, and text rendering options.
                     const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                         after: {
-                            contentText: messagePrefix + aggregatedDiagnostic.severityAndMessages[0].message,
+                            contentText: messagePrefix + aggregatedDiagnostic.singleDiagnostics[0].message,
                             fontStyle: "italic",
                             fontWeight: "normal",
                             margin: "80px"
@@ -188,11 +206,11 @@ export function activate(context: vscode.ExtensionContext) {
 
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
-                        range: aggregatedDiagnostic.severityAndMessages[0].range,
+                        range: aggregatedDiagnostic.singleDiagnostics[0].range,
                         renderOptions: decInstanceRenderOptions
                     };
 
-                    switch (aggregatedDiagnostic.severityAndMessages[0].severity)
+                    switch (aggregatedDiagnostic.singleDiagnostics[0].severity)
                     {
                         // Error
                         case 0:
@@ -220,8 +238,6 @@ export function activate(context: vscode.ExtensionContext) {
         activeTextEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
         activeTextEditor.setDecorations(errorLensDecorationStyleHint, errorLensDecorationOptionsHint);
 
-        let numErrors = errorLensDecorationOptionsError.length;
-        let numWarnings = errorLensDecorationOptionsWarning.length;
         if( numErrors + numWarnings === 0 )
         {
             updateStatusBar("ErrorLens: No errors or warnings", "");
