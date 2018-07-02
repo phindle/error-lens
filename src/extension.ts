@@ -109,9 +109,10 @@ export function activate(context: vscode.ExtensionContext) {
                 //     }
                 // };
 
-                let aggregatedDiagnostics : any = {};                                   // TODO - need a much better name than this!!!
+                let aggregatedDiagnostics : any = {};
 
-                // Iterate 
+                // Iterate over the diagnostics VS Code has reported for this file. For each one, add to
+                // a list of objects, grouping together diagnostics which occur on a single line.
                 for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
                 {
                     let diagnosticLine = diagnostic.range.start.line;
@@ -124,36 +125,21 @@ export function activate(context: vscode.ExtensionContext) {
 
                     if( aggregatedDiagnostics[key] )
                     {
+                        // Already added an object for this key, so add onto the severityAndMessages[] array.
                         aggregatedDiagnostics[key].severityAndMessages.push( severityAndMessage );
                     }
                     else
                     {
                         // Create a new object for this key, specifying the line: and a severityAndMessage[] array
-                        let newDiag = {
+                        aggregatedDiagnostics[key] = {
                             line: diagnosticLine,
                             severityAndMessages: [ severityAndMessage ]
                         };
-
-                        aggregatedDiagnostics[key] = newDiag ;
                     }
                 }
 
                 for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
                 {
-// ------------------------------------------------------------
-// ------------------------------------------------------------
-                    // let testString = "TESTING 1..2..3..";
-                    // let diagnosticLine = diagnostic.range.start.line;
-                    // let diagnosticStartChar = diagnostic.range.end.character;
-                    // let diagnosticEndChar = diagnosticStartChar + testString.length;
-
-                    // let testRange = new vscode.Range( diagnosticLine, diagnosticStartChar, diagnosticLine, diagnosticEndChar );
-                    // const test_diagnosticDecorationOptions : vscode.DecorationOptions = {
-                    //     range: testRange
-                    //     // hoverMessage: hoverStringHere
-                    // };
-                    // test_diagnosticDecorationOptions.
-
                     let diagnosticSource = "";
                     if( diagnostic.source )
                     {
@@ -180,6 +166,8 @@ export function activate(context: vscode.ExtensionContext) {
                             break;
                     }
 
+                    // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
+                    // after the source-code line in the editor, and text rendering options.
                     const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                         after: {
                             contentText: diagnosticSource + severityString + diagnostic.message,
@@ -188,9 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
                             margin: "100px"
                         }
                     };
-// ------------------------------------------------------------
-// ------------------------------------------------------------
-                    console.log( severityString + diagnostic.message + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
+                    // console.log( severityString + diagnostic.message + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
 
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
@@ -198,7 +184,6 @@ export function activate(context: vscode.ExtensionContext) {
                         renderOptions: decInstanceRenderOptions
                         // hoverMessage: hoverStringHere
                     };
-
 
                     switch (diagnostic.severity) {
                         // Error
