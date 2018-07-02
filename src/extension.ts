@@ -62,15 +62,83 @@ export function activate(context: vscode.ExtensionContext) {
         for (const uri of diagnosticChangeEvent.uris) {
             // Only update decorations for the active text editor.
             if ( uri.fsPath === activeTextEditor.document.uri.fsPath ) {
+                // console.log( " ");
                 // console.log("- uri.fsPath = " + uri.fsPath);
                 // console.log("- window.activeTextEditor = " + activeTextEditor.document.uri.fsPath);
 
-                const diagnosticArray : vscode.Diagnostic[] = vscode.languages.getDiagnostics( uri );
+                // const diagnosticArray : vscode.Diagnostic[] = vscode.languages.getDiagnostics( uri );
 
                 // Iterate over each diagnostic flagged in this file (uri). For each one, 
                 let diagnostic : vscode.Diagnostic;
 
-                for ( diagnostic of diagnosticArray )
+                // The aggregatedDiagnostics object will contain one or more objects, each object being keyed by "lineN",
+                // where N is the source line where one or more diagnostics are being reported.
+                // Each object which is keyed by "lineN" will contain one, or more, severityAndMessage[] array of objects.
+                // This facilitates gathering info about lines which contain more than one diagnostic.
+                // {
+                //     line28: {
+                //         line: 28,
+                //         severityAndMessage: [
+                //             {
+                //                 diagnosticSeverity: 1,                                  // 1 => Warning
+                //                 diagnosticMessage: "Unused Variable 'example'"
+                //             }
+                //         ]
+                //     },
+                //     line67: {
+                //         line: 67,
+                //         severityAndMessage: [
+                //             {
+                //                 diagnosticSeverity: 0,                                  // 0 => Error
+                //                 diagnosticMessage: "Missing semi-colon'"
+                //             },
+                //             {
+                //                 diagnosticSeverity: 0,                                  // 0 => Error
+                //                 diagnosticMessage: "Unknown method 'XYZ()'"
+                //             }
+                //         ]
+                //     },
+                //     line93: {
+                //         line: 93,
+                //         severityAndMessage: [
+                //             {
+                //                 diagnosticSeverity: 0,                                  // 0 => Error
+                //                 diagnosticMessage: "Missing argument to function Example()"
+                //             }
+                //         ]
+                //     }
+                // };
+
+                let aggregatedDiagnostics : any = {};                                   // TODO - need a much better name than this!!!
+
+                // Iterate 
+                for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
+                {
+                    let diagnosticLine = diagnostic.range.start.line;
+                    let key = "line" + diagnosticLine;
+
+                    let severityAndMessage = {
+                        diagnosticSeverity: diagnostic.severity,
+                        diagnosticMessage: diagnostic.message
+                    };
+
+                    if( aggregatedDiagnostics[key] )
+                    {
+                        aggregatedDiagnostics[key].severityAndMessages.push( severityAndMessage );
+                    }
+                    else
+                    {
+                        // Create a new object for this key, specifying the line: and a severityAndMessage[] array
+                        let newDiag = {
+                            line: diagnosticLine,
+                            severityAndMessages: [ severityAndMessage ]
+                        };
+
+                        aggregatedDiagnostics[key] = newDiag ;
+                    }
+                }
+
+                for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
                 {
 // ------------------------------------------------------------
 // ------------------------------------------------------------
@@ -122,7 +190,7 @@ export function activate(context: vscode.ExtensionContext) {
                     };
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-                    console.log( severityString + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
+                    console.log( severityString + diagnostic.message + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
 
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
