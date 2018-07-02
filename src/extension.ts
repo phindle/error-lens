@@ -128,10 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
                 let key : any;
                 for ( key in aggregatedDiagnostics )       // Iterate over propery values (not names)
                 {
-                    // console.log( "aggregatedDiagnostic = " + aggregatedDiagnostic);
-                    // var x = aggregatedDiagnostic;
                     let aggregatedDiagnostic = aggregatedDiagnostics[key];
-
                     let messagePrefix : string;
 
                     if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
@@ -210,11 +207,11 @@ export function activate(context: vscode.ExtensionContext) {
 
         if( numErrors + numWarnings === 0 )
         {
-            updateStatusBar("ErrorLens: No errors or warnings", "");
+            updateStatusBar("ErrorLens: No errors or warnings" );
         }
         else
         {
-            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s).", "rgba(250, 100, 20, 1.0)" );
+            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s)." );
         }
     }
 
@@ -224,10 +221,9 @@ export function activate(context: vscode.ExtensionContext) {
      * Update the Visual Studio Code status bar
      *
      * @param {string} statusBarText - Text to show in the Status Bar.
-     * @param {string} textColor - Colour as string, e.g. "rgba(255, 255, 255, 1.0), or "" to use standard text colour.
      * @returns
      */
-    function updateStatusBar( statusBarText : string, textColor : string ) {
+    function updateStatusBar( statusBarText : string ) {
         // Create _statusBarItem if needed
         if (!_statusBarItem) {
             _statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
