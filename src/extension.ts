@@ -38,8 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
     // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
     vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => updateErrorDecorations(diagnosticChangeEvent) );
 
-
-
     /**
      * Invoked by onDidChangeDiagnostics() when the language diagnostics change.
      *
@@ -66,8 +64,6 @@ export function activate(context: vscode.ExtensionContext) {
                 // console.log("- uri.fsPath = " + uri.fsPath);
                 // console.log("- window.activeTextEditor = " + activeTextEditor.document.uri.fsPath);
 
-                // const diagnosticArray : vscode.Diagnostic[] = vscode.languages.getDiagnostics( uri );
-
                 // Iterate over each diagnostic flagged in this file (uri). For each one, 
                 let diagnostic : vscode.Diagnostic;
 
@@ -78,32 +74,32 @@ export function activate(context: vscode.ExtensionContext) {
                 // {
                 //     line28: {
                 //         line: 28,
-                //         severityAndMessage: [
+                //         severityAndMessages: [
                 //             {
-                //                 diagnosticSeverity: 1,                                  // 1 => Warning
-                //                 diagnosticMessage: "Unused Variable 'example'"
+                //                 severity: 1,                                  // 1 => Warning
+                //                 message: "Unused Variable 'example'"
                 //             }
                 //         ]
                 //     },
                 //     line67: {
                 //         line: 67,
-                //         severityAndMessage: [
+                //         severityAndMessages: [
                 //             {
-                //                 diagnosticSeverity: 0,                                  // 0 => Error
-                //                 diagnosticMessage: "Missing semi-colon'"
+                //                 severity: 0,                                  // 0 => Error
+                //                 message: "Missing semi-colon'"
                 //             },
                 //             {
-                //                 diagnosticSeverity: 0,                                  // 0 => Error
-                //                 diagnosticMessage: "Unknown method 'XYZ()'"
+                //                 severity: 0,                                  // 0 => Error
+                //                 message: "Unknown method 'XYZ()'"
                 //             }
                 //         ]
                 //     },
                 //     line93: {
                 //         line: 93,
-                //         severityAndMessage: [
+                //         severityAndMessages: [
                 //             {
-                //                 diagnosticSeverity: 0,                                  // 0 => Error
-                //                 diagnosticMessage: "Missing argument to function Example()"
+                //                 severity: 0,                                  // 0 => Error
+                //                 message: "Missing argument to function Example()"
                 //             }
                 //         ]
                 //     }
@@ -118,9 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
                     let diagnosticLine = diagnostic.range.start.line;
                     let key = "line" + diagnosticLine;
 
+                    // todo - maybe change the name of this var, because it now has start and end...
                     let severityAndMessage = {
-                        diagnosticSeverity: diagnostic.severity,
-                        diagnosticMessage: diagnostic.message
+                        severity: diagnostic.severity,
+                        message: diagnostic.message,
+                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
                     };
 
                     if( aggregatedDiagnostics[key] )
@@ -138,54 +136,64 @@ export function activate(context: vscode.ExtensionContext) {
                     }
                 }
 
-                for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
+                let key : any;
+                for ( key in aggregatedDiagnostics )       // Iterate over propery values (not names)
                 {
-                    let diagnosticSource = "";
-                    if( diagnostic.source )
-                    {
-                        diagnosticSource = "[" + diagnostic.source + "] ";
-                    }
+                    // console.log( "aggregatedDiagnostic = " + aggregatedDiagnostic);
+                    // var x = aggregatedDiagnostic;
+                    let aggregatedDiagnostic = aggregatedDiagnostics[key];
 
-                    let severityString;
-                    switch (diagnostic.severity) {
-                        // Error
-                        case 0:
-                            severityString = "Error: ";
-                            break;
-                        // Warning
-                        case 1:
-                            severityString = "Warning: ";
-                            break;
-                        // Info
-                        case 2:
-                            severityString = "Info: ";
-                            break;
-                        // Hint
-                        case 3:
-                            severityString = "Hint: ";
-                            break;
+                    let messagePrefix : string;
+
+                    if( aggregatedDiagnostic.severityAndMessages.length > 1 )
+                    {
+                        // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
+                        messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.severityAndMessages.length + ": ";
                     }
+                    else
+                    {
+                        // If only 1 diagnostic for this source line, show the diagnostic severity
+                        switch (aggregatedDiagnostic.severityAndMessages[0].severity)
+                        {
+                            case 0:
+                                messagePrefix = "Error: ";
+                                break;
+
+                            case 1:
+                                messagePrefix = "Warning: ";
+                                break;
+
+                            case 2:
+                                messagePrefix = "Info: ";
+                                break;
+
+                            case 3:
+                            default:
+                                messagePrefix = "Hint: ";
+                                break;
+                        }
+                    }
+                    // console.log("num diagnostics on line " + aggregatedDiagnostic.line + " = " + aggregatedDiagnostic.severityAndMessages.length );
 
                     // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
                     // after the source-code line in the editor, and text rendering options.
                     const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                         after: {
-                            contentText: diagnosticSource + severityString + diagnostic.message,
+                            contentText: messagePrefix + aggregatedDiagnostic.severityAndMessages[0].message,
                             fontStyle: "italic",
                             fontWeight: "normal",
-                            margin: "100px"
+                            margin: "80px"
                         }
                     };
-                    // console.log( severityString + diagnostic.message + " on line " + diagnostic.range.start.line + " to " + diagnostic.range.end.line );
 
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
-                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end),
+                        range: aggregatedDiagnostic.severityAndMessages[0].range,
                         renderOptions: decInstanceRenderOptions
-                        // hoverMessage: hoverStringHere
                     };
 
-                    switch (diagnostic.severity) {
+                    switch (aggregatedDiagnostic.severityAndMessages[0].severity)
+                    {
                         // Error
                         case 0:
                             errorLensDecorationOptionsError.push(diagnosticDecorationOptions);
@@ -207,10 +215,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
-        // activeTextEditor.setDecorations( decorationType : TextEditorDecorationType, rangesOrOptions : Range[] | DecorationOptions[] );
-        //                                                               ^ what we're using for this
-        //                                                                                                                  ^ what we're using for this
-
         activeTextEditor.setDecorations(errorLensDecorationStyleError, errorLensDecorationOptionsError);
         activeTextEditor.setDecorations(errorLensDecorationStyleWarning, errorLensDecorationOptionsWarning);
         activeTextEditor.setDecorations(errorLensDecorationStyleInfo, errorLensDecorationOptionsInfo);
@@ -224,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         else
         {
-            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s). $(bug)", "rgba(250, 100, 20, 1.0)" );
+            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s).", "rgba(250, 100, 20, 1.0)" );
         }
     }
 
