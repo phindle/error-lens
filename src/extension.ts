@@ -72,43 +72,20 @@ export function activate(context: vscode.ExtensionContext) {
 
                 // The aggregatedDiagnostics object will contain one or more objects, each object being keyed by "lineN",
                 // where N is the source line where one or more diagnostics are being reported.
-                // Each object which is keyed by "lineN" will contain one or more singleDiagnostics[] array of objects.
+                // Each object which is keyed by "lineN" will contain one or more arrayDiagnostics[] array of objects.
                 // This facilitates gathering info about lines which contain more than one diagnostic.
                 // {
                 //     line28: {
                 //         line: 28,
-                //         singleDiagnostics: [
-                //             {
-                //                 severity: 1,                                  // 1 => Warning
-                //                 message: "Unused Variable 'example'",
-                //                 range: <range>
-                //             }
-                //         ]
+                //         arrayDiagnostics: [ <vscode.Diagnostic #1> ]
                 //     },
                 //     line67: {
                 //         line: 67,
-                //         singleDiagnostics: [
-                //             {
-                //                 severity: 0,                                  // 0 => Error
-                //                 message: "Missing semi-colon'"
-                //                 range: <range>
-                //             },
-                //             {
-                //                 severity: 0,                                  // 0 => Error
-                //                 message: "Unknown method 'XYZ()'"
-                //                 range: <range>
-                //             }
-                //         ]
+                //         arrayDiagnostics: [ <vscode.Diagnostic# 1>, <vscode.Diagnostic# 2> ]
                 //     },
                 //     line93: {
                 //         line: 93,
-                //         singleDiagnostics: [
-                //             {
-                //                 severity: 0,                                  // 0 => Error
-                //                 message: "Missing argument to function Example()"
-                //                 range: <range>
-                //             }
-                //         ]
+                //         arrayDiagnostics: [ <vscode.Diagnostic #1> ]
                 //     }
                 // };
 
@@ -118,26 +95,19 @@ export function activate(context: vscode.ExtensionContext) {
                 // a list of objects, grouping together diagnostics which occur on a single line.
                 for ( diagnostic of vscode.languages.getDiagnostics( uri ) )
                 {
-                    let diagnosticLine = diagnostic.range.start.line;
-                    let key = "line" + diagnosticLine;
-
-                    let singleDiagnostic = {
-                        severity: diagnostic.severity,
-                        message: diagnostic.message,
-                        range: new vscode.Range(diagnostic.range.start, diagnostic.range.end)
-                    };
+                    let key = "line" + diagnostic.range.start.line;
 
                     if( aggregatedDiagnostics[key] )
                     {
-                        // Already added an object for this key, so add onto the singleDiagnostics[] array.
-                        aggregatedDiagnostics[key].singleDiagnostics.push( singleDiagnostic );
+                        // Already added an object for this key, so add onto the arrayDiagnostics[] array.
+                        aggregatedDiagnostics[key].arrayDiagnostics.push( diagnostic );
                     }
                     else
                     {
-                        // Create a new object for this key, specifying the line: and a singleDiagnostics[] array
+                        // Create a new object for this key, specifying the line: and a arrayDiagnostics[] array
                         aggregatedDiagnostics[key] = {
-                            line: diagnosticLine,
-                            singleDiagnostics: [ singleDiagnostic ]
+                            line: diagnostic.range.start.line,
+                            arrayDiagnostics: [ diagnostic ]
                         };
                     }
 
@@ -164,15 +134,15 @@ export function activate(context: vscode.ExtensionContext) {
 
                     let messagePrefix : string;
 
-                    if( aggregatedDiagnostic.singleDiagnostics.length > 1 )
+                    if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
                     {
                         // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
-                        messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.singleDiagnostics.length + ": ";
+                        messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
                     }
                     else
                     {
                         // If only 1 diagnostic for this source line, show the diagnostic severity
-                        switch (aggregatedDiagnostic.singleDiagnostics[0].severity)
+                        switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
                         {
                             case 0:
                                 messagePrefix = "Error: ";
@@ -197,7 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
                     // after the source-code line in the editor, and text rendering options.
                     const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                         after: {
-                            contentText: messagePrefix + aggregatedDiagnostic.singleDiagnostics[0].message,
+                            contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
                             fontStyle: "italic",
                             fontWeight: "normal",
                             margin: "80px"
@@ -206,11 +176,11 @@ export function activate(context: vscode.ExtensionContext) {
 
                     // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
                     const diagnosticDecorationOptions : vscode.DecorationOptions = {
-                        range: aggregatedDiagnostic.singleDiagnostics[0].range,
+                        range: aggregatedDiagnostic.arrayDiagnostics[0].range,
                         renderOptions: decInstanceRenderOptions
                     };
 
-                    switch (aggregatedDiagnostic.singleDiagnostics[0].severity)
+                    switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
                     {
                         // Error
                         case 0:
