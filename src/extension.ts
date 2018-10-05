@@ -93,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     /**
-     * todo
+     * Update the editor decorations for the provided URI.
      *
      * @param {vscode.Uri} uri - Uri to add decorations to.
      */
@@ -306,30 +306,28 @@ export function activate(context: vscode.ExtensionContext) {
      * Update the Visual Studio Code status bar
      *
      * @param {string} statusBarText - Text to show in the Status Bar.
-     * @returns
      */
     function updateStatusBar( statusBarText : string ) {
         // Create _statusBarItem if needed
-        if (!_statusBarItem) {
+        if (!_statusBarItem)
+        {
             _statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
         const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-        if (!activeTextEditor) {
+
+        if (!activeTextEditor)
+        {
             // No open text editor
             _statusBarItem.hide();
-            return;
         }
-        _statusBarItem.text = statusBarText;
-        // if( textColor !== "")
-        // {
-        //     _statusBarItem.color = textColor;
-        // }
-        // else
-        // {
-        //     _statusBarItem.color = undefined;
-        // }
-        _statusBarItem.show();
+        else
+        {
+            _statusBarItem.text = statusBarText;
+
+            _statusBarItem.show();
+        }
+
     }
 }
 
