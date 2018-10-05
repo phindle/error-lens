@@ -16,12 +16,6 @@
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [
-            {
-                "command": "errorlens.sayHello",
-                "title": "Hello World"
-            }
-        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
