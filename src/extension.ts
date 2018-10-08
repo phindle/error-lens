@@ -14,9 +14,9 @@ export function activate(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration("errorLens");
 
     const errorColor = config.get("errorColor") || "rgba(240,10,0,0.5)";
-    const warningColor = config.get("warningColor") || "rgba(180,150,0,0.5)";
-    const infoColor = config.get("infoColor") || "rgba(240,200,0,0.5)";
-    const hintColor = config.get("hintColor") || "rgba(20,100,0,0.5)";
+    const warningColor = config.get("warningColor") || "rgba(200,100,0,0.5)";
+    const infoColor = config.get("infoColor") || "rgba(40,20,120,0.5)";
+    const hintColor = config.get("hintColor") || "rgba(20,120,40,0.5)";
     const errorLensFontStyle : string = config.get("fontStyle") || "italic";
     const errorLensFontWeight : string = config.get("fontWeight") || "normal";
     const errorLensMargin : string = config.get("fontMargin") || "40px";
