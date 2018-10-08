@@ -1,15 +1,15 @@
 {
-    "name": "errorlens",
-    "displayName": "ErrorLens",
-    "description": "Improve the highlighting of errors, warnings and other language diagnostics.",
-    "version": "1.0.0",
-    "publisher": "WarpedMinds",
-    "engines": {
-        "vscode": "^1.24.0"
-    },
-    "categories": [
-        "Other"
-    ],
+	"name": "errorlens",
+	"displayName": "ErrorLens",
+	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
+	"version": "1.0.0",
+	"publisher": "WarpedMinds",
+	"engines": {
+		"vscode": "^1.24.0"
+	},
+	"categories": [
+		"Other"
+	],
 	"keywords": [
 		"highlight",
 		"highlighter",
@@ -26,11 +26,11 @@
 		"type": "git",
 		"url": "https://github.com/phindle/error-lens"
 	},
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./out/extension",
-    "contributes": {
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension",
+	"contributes": {
 		"configuration": {
 			"properties": {
 				"errorLens.errorColor": {
@@ -61,7 +61,7 @@
 					"default": "rgba(20,100,0,0.5)",
 					"description": "The background color used to highlight lines containing hints. (Alpha is used)"
 				},
-                "errorLens.fontStyle": {
+				"errorLens.fontStyle": {
 					"type": [
 						"string"
 					],
@@ -71,8 +71,8 @@
 					],
 					"default": "italic",
 					"description": "Italic or not?"
-                },
-                "errorLens.fontWeight": {
+				},
+				"errorLens.fontWeight": {
 					"type": [
 						"string"
 					],
@@ -83,36 +83,35 @@
 					"default": "normal",
 					"description": "Bold or not?"
 				},
-                "errorLens.fontMargin": {
+				"errorLens.fontMargin": {
 					"type": [
 						"string"
 					],
 					"default": "40px",
 					"description": "Distance between end of the code line, and the start of the in-line message string."
 				},
-                "errorLens.errorMsgPrefix": {
+				"errorLens.errorMsgPrefix": {
 					"type": [
 						"string"
 					],
 					"default": "! ",
 					"description": "A customizable prefix string, which is added before the in-line message string."
 				}
-
 			}
 		}
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "tslint": "^5.8.0",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
-    }
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^7.0.71",
+		"tslint": "^5.11.0",
+		"typescript": "^2.6.1",
+		"vscode": "^1.1.21"
+	}
 }
