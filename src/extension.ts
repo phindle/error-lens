@@ -35,27 +35,10 @@ export function activate(context: vscode.ExtensionContext) {
         backgroundColor: "rgba(20,100,0,0.5)"
     });
 
-    // context.subscriptions.push(vscode.languages.onDidChangeDiagnostics(e => 
-    vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => {onChangedDiagnostics(diagnosticChangeEvent); }, null, context.subscriptions );
+    vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => { onChangedDiagnostics(diagnosticChangeEvent); }, null, context.subscriptions );
 
-    // vscode.window.onDidChangeActiveTextEditor(editor => { console.log( "onDidChangeActiveTextEditor()" ); }, null, context.subscriptions);
-    // vscode.workspace.onDidChangeTextDocument(editor => { console.log( "onDidChangeTextDocument()" ); }, null, context.subscriptions);
-	// vscode.window.onDidChangeTextEditorSelection(editor => { console.log( "onDidChangeTextEditorSelection()" ); }, null, context.subscriptions);
-	// vscode.window.onDidChangeTextEditorViewColumn(editor => { console.log( "onDidChangeTextEditorViewColumn()" ); }, null, context.subscriptions);
+    // Note: URIs for onDidOpenTextDocument() can contain schemes other than file:// (such as git://)
 	vscode.workspace.onDidOpenTextDocument(textDocument => { updateDecorationsForUri( textDocument.uri ); }, null, context.subscriptions );
-	// vscode.workspace.onDidCloseTextDocument(textDocument => { console.log( "onDidCloseTextDocument()" ); }, null, context.subscriptions);
-
-    // vscode.workspace.onDidChangeTextDocument(event => {
-    //     if (activeEditor && event.document === activeEditor.document) {
-    //         triggerUpdateDecorations();
-    //     }
-    // }, null, context.subscriptions);
-
-	// context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(e => updateStatusBar()));
-	// context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => updateStatusBar()));
-	// context.subscriptions.push(vscode.window.onDidChangeTextEditorViewColumn(e => updateStatusBar()));
-	// context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(e => updateStatusBar()));
-	// context.subscriptions.push(vscode.workspace.onDidCloseTextDocument(e => updateStatusBar()));
 
 
     /**
@@ -78,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         
-
+        // Many URIs can change - we only need to decorate the active text editor
         for (const uri of diagnosticChangeEvent.uris)
         {
             // Only update decorations for the active text editor.
@@ -93,14 +76,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     /**
-     * Update the editor decorations for the provided URI.
+     * Update the editor decorations for the provided URI. Only if the URI scheme is "file" is the function
+     * processed. (It can be others, such as "git://<something>", in which case the function early-exits).
      *
-     * @param {vscode.Uri} uri - Uri to add decorations to.
+     * @param {vscode.Uri} uriToDecorate - Uri to add decorations to.
      */
-    function updateDecorationsForUri( uri : vscode.Uri ) {
-        if ( !uri )
+    function updateDecorationsForUri( uriToDecorate : vscode.Uri ) {
+        if ( !uriToDecorate )
         {
-            console.log( "Exit updateDecorationsForUri() - uri = empty" );
+            console.log( "Exit updateDecorationsForUri() - uriToDecorate = empty" );
+            return;
+        }
+
+        // Only process "file://" URIs.
+        if( uriToDecorate.scheme !== "file" )
+        {
             return;
         }
 
@@ -123,35 +113,12 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Weirdness - when switching between files (using ctrl+Tab), I'll see the .fsPath properties like so:
-        // activeTextEditor.document.uri.fsPath = c:\Users\Phil Hindle\git\Unity_Projects\RunOutTest\RunOut_UnityProject\Assets\Scripts\RotateCameraTest.cs
-        // uri.fsPath                           = c:\Users\Phil Hindle\git\Unity_Projects\RunOutTest\RunOut_UnityProject\Assets\Scripts\RotateCameraTest.cs.git
-        // See the .git on the end of uri.fsPath, wtf?!
-        // So whilst it seems sensible to check the path of the active text editor is the same as uri.fsPath, this
-        // comparison fails due to the spurious .git on the end of uri.fsPath.
-        // For this reason, we don't do the check.
-        // Subsequent references to the path in this function refer to activeTextEditor.document.uri, since that
-        // seems to be 'correct' whilst uri.fsPath seems broken.
-
-        // if ( activeTextEditor.document.uri.fsPath !== uri.fsPath )
-        // {
-        //     console.log( "Exit updateDecorationsForUri() - activeTextEditor.document.uri.fsPath = " + activeTextEditor.document.uri.fsPath );
-        //     console.log( "Exit updateDecorationsForUri() - uri.fsPath = " + uri.fsPath );
-        //     console.log( "Exit updateDecorationsForUri() - activeTextEditor.document.uri.fsPath !== uri.fsPath" );
-        // }
-
         const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsInfo: vscode.DecorationOptions[] = [];
         const errorLensDecorationOptionsHint: vscode.DecorationOptions[] = [];
         let numErrors = 0;
         let numWarnings = 0;
-
-
-        // console.log( "updateDecorationsForUri() - uri.fsPath === activeTextEditor.document.uri.fsPath = " + activeTextEditor.document.uri.fsPath );
-
-        // Iterate over each diagnostic flagged in this file (uri). For each one, 
-        let diagnostic : vscode.Diagnostic;
 
         // The aggregatedDiagnostics object will contain one or more objects, each object being keyed by "lineN",
         // where N is the source line where one or more diagnostics are being reported.
@@ -173,17 +140,17 @@ export function activate(context: vscode.ExtensionContext) {
         // };
 
         let aggregatedDiagnostics : any = {};
+        let diagnostic : vscode.Diagnostic;
 
-
-        // Iterate over the diagnostics VS Code has reported for this file. For each one, add to
+        // Iterate over each diagnostic that VS Code has reported for this file. For each one, add to
         // a list of objects, grouping together diagnostics which occur on a single line.
-        for ( diagnostic of vscode.languages.getDiagnostics( activeTextEditor.document.uri ) )
+        for ( diagnostic of vscode.languages.getDiagnostics( uriToDecorate ) )
         {
             let key = "line" + diagnostic.range.start.line;
 
             if( aggregatedDiagnostics[key] )
             {
-                // Already added an object for this key, so add onto the arrayDiagnostics[] array.
+                // Already added an object for this key, so augment the arrayDiagnostics[] array.
                 aggregatedDiagnostics[key].arrayDiagnostics.push( diagnostic );
             }
             else
@@ -210,7 +177,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         let key : any;
-        for ( key in aggregatedDiagnostics )       // Iterate over propery values (not names)
+        for ( key in aggregatedDiagnostics )       // Iterate over property values (not names)
         {
             let aggregatedDiagnostic = aggregatedDiagnostics[key];
             let messagePrefix : string;
