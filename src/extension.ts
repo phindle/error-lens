@@ -11,28 +11,39 @@ export function activate(context: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     console.log('Visual Studio Code Extension "errorlens" is now active');
 
+    const config = vscode.workspace.getConfiguration("errorLens");
+
+    const errorColor = config.get("errorColor") || "rgba(240,10,0,0.5)";
+    const warningColor = config.get("warningColor") || "rgba(180,150,0,0.5)";
+    const infoColor = config.get("infoColor") || "rgba(240,200,0,0.5)";
+    const hintColor = config.get("hintColor") || "rgba(20,100,0,0.5)";
+    const errorLensFontStyle : string = config.get("fontStyle") || "italic";
+    const errorLensFontWeight : string = config.get("fontWeight") || "normal";
+    const errorLensMargin : string = config.get("fontMargin") || "40px";
+    const errorMsgPrefix : string | undefined = config.get("errorMsgPrefix");
+
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
 
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     const errorLensDecorationTypeError: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,10,0,0.5)"
+        backgroundColor: errorColor
     });
 
     const errorLensDecorationTypeWarning: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(180,150,0,0.5)"
+        backgroundColor: warningColor
     });
 
     const errorLensDecorationTypeInfo: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(240,200,0,0.5)"
+        backgroundColor: infoColor
     });
 
     const errorLensDecorationTypeHint: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
-        backgroundColor: "rgba(20,100,0,0.5)"
+        backgroundColor: hintColor
     });
 
     vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => { onChangedDiagnostics(diagnosticChangeEvent); }, null, context.subscriptions );
@@ -180,12 +191,12 @@ export function activate(context: vscode.ExtensionContext) {
         for ( key in aggregatedDiagnostics )       // Iterate over property values (not names)
         {
             let aggregatedDiagnostic = aggregatedDiagnostics[key];
-            let messagePrefix : string;
+            let messagePrefix : string = errorMsgPrefix ? errorMsgPrefix : "";
 
             if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
             {
                 // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
-                messagePrefix = "Diagnostic #1 of " + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
+                messagePrefix += "Diagnostic #1 of " + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
             }
             else
             {
@@ -193,20 +204,20 @@ export function activate(context: vscode.ExtensionContext) {
                 switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
                 {
                     case 0:
-                        messagePrefix = "Error: ";
+                        messagePrefix += "Error: ";
                         break;
 
                     case 1:
-                        messagePrefix = "Warning: ";
+                        messagePrefix += "Warning: ";
                         break;
 
                     case 2:
-                        messagePrefix = "Info: ";
+                        messagePrefix += "Info: ";
                         break;
 
                     case 3:
                     default:
-                        messagePrefix = "Hint: ";
+                        messagePrefix += "Hint: ";
                         break;
                 }
             }
@@ -216,9 +227,9 @@ export function activate(context: vscode.ExtensionContext) {
             const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                 after: {
                     contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
-                    fontStyle: "italic",
-                    fontWeight: "normal",
-                    margin: "80px"
+                    fontStyle: errorLensFontStyle,
+                    fontWeight: errorLensFontWeight,
+                    margin: errorLensMargin
                 }
             };
 

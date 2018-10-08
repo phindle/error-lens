@@ -15,6 +15,75 @@
     ],
     "main": "./out/extension",
     "contributes": {
+		"configuration": {
+			"properties": {
+				"errorLens.errorColor": {
+					"type": [
+						"string"
+					],
+					"default": "rgba(240,10,0,0.5)",
+					"description": "The background color used to highlight lines containing errors. (Alpha is used)"
+				},
+				"errorLens.warningColor": {
+					"type": [
+						"string"
+					],
+					"default": "rgba(180,150,0,0.5)",
+					"description": "The background color used to highlight lines containing warnings. (Alpha is used)"
+				},
+				"errorLens.infoColor": {
+					"type": [
+						"string"
+					],
+					"default": "rgba(240,200,0,0.5)",
+					"description": "The background color used to highlight lines containing info. (Alpha is used)"
+				},
+				"errorLens.hintColor": {
+					"type": [
+						"string"
+					],
+					"default": "rgba(20,100,0,0.5)",
+					"description": "The background color used to highlight lines containing hints. (Alpha is used)"
+				},
+                "errorLens.fontStyle": {
+					"type": [
+						"string"
+					],
+					"enum": [
+						"normal",
+						"italic"
+					],
+					"default": "italic",
+					"description": "Italic or not?"
+                },
+                "errorLens.fontWeight": {
+					"type": [
+						"string"
+					],
+					"enum": [
+						"normal",
+						"bold"
+					],
+					"default": "normal",
+					"description": "Bold or not?"
+				},
+                "errorLens.fontMargin": {
+					"type": [
+						"string"
+					],
+					"default": "40px",
+					"description": "Distance between end of the code line, and the start of the in-line message string."
+				},
+                "errorLens.errorMsgPrefix": {
+					"type": [
+						"string"
+					],
+					"default": "! ",
+					"description": "A customizable prefix string, which is added before the in-line message string."
+				}
+
+			}
+		}
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
