@@ -70,7 +70,7 @@
 						"italic"
 					],
 					"default": "italic",
-					"description": "Italic or not?"
+					"description": "Show ErrorLens annotations in Italics, or not?"
 				},
 				"errorLens.fontWeight": {
 					"type": [
@@ -81,21 +81,21 @@
 						"bold"
 					],
 					"default": "normal",
-					"description": "Bold or not?"
+					"description": "Show ErrorLens annotations in Bold or not?"
 				},
 				"errorLens.fontMargin": {
 					"type": [
 						"string"
 					],
 					"default": "40px",
-					"description": "Distance between end of the code line, and the start of the in-line message string."
+					"description": "Distance between end of the code line, and the start of the ErrorLens annotation."
 				},
 				"errorLens.errorMsgPrefix": {
 					"type": [
 						"string"
 					],
 					"default": "! ",
-					"description": "A customizable prefix string, which is added before the in-line message string."
+					"description": "A customizable prefix string, which is added at the start of the ErrorLens annotation."
 				}
 			}
 		}
