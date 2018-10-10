@@ -3,7 +3,7 @@
 	"displayName": "ErrorLens",
 	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
 	"version": "1.0.0",
-	"publisher": "Warped Minds",
+	"publisher": "PhilHindle",
 	"engines": {
 		"vscode": "^1.24.0"
 	},
