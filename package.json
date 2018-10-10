@@ -3,7 +3,7 @@
 	"displayName": "ErrorLens",
 	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
 	"version": "1.0.0",
-	"publisher": "WarpedMinds",
+	"publisher": "Warped Minds",
 	"engines": {
 		"vscode": "^1.24.0"
 	},
@@ -22,6 +22,7 @@
 		"color": "#332020",
 		"theme": "dark"
 	},
+	"icon": "images/errorlens-icon.png",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/phindle/error-lens"
