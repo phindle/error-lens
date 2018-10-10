@@ -14,8 +14,7 @@
 		"highlight",
 		"highlighter",
 		"code highlighter",
-		"line highlighter",
-		"highlight line",
+		"diagnostics",
 		"multi-root ready"
 	],
 	"galleryBanner": {
