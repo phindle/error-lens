@@ -11,76 +11,91 @@ export function activate(context: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     console.log('Visual Studio Code Extension "errorlens" is now active');
 
-    const config = vscode.workspace.getConfiguration("errorLens");
-
-    const errorLensFontStyle : string = config.get("fontStyle") || "italic";
-    const errorLensFontWeight : string = config.get("fontWeight") || "normal";
-    const errorLensMargin : string = config.get("fontMargin") || "40px";
-    const errorMsgPrefix : string | undefined = config.get("errorMsgPrefix");
-    const enabledDiagnosticLevels : string[] | undefined = config.get("enabledDiagnosticLevels") || ["error", "warning"];
-
-    function GetErrorColor()
+    function GetErrorBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
-        const errorColor = cfg.get("errorColor") || "rgba(240,10,0,0.5)";
+        const errorColor : string = cfg.get("errorColor") || "rgba(240,10,0,0.5)";
         return errorColor;
     }
 
-    function GetWarningColor()
+    function GetWarningBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
-        const warningColor = cfg.get("warningColor") || "rgba(200,100,0,0.5)";
+        const warningColor : string = cfg.get("warningColor") || "rgba(200,100,0,0.5)";
         return warningColor;
     }
 
-    function GetInfoColor()
+    function GetInfoBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
-        const infoColor = cfg.get("infoColor") || "rgba(40,20,120,0.5)";
+        const infoColor : string = cfg.get("infoColor") || "rgba(40,20,120,0.5)";
         return infoColor;
     }
 
-    function GetHintColor()
+    function GetHintBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
-        const hintColor = cfg.get("hintColor") || "rgba(20,120,40,0.5)";
+        const hintColor : string = cfg.get("hintColor") || "rgba(20,120,40,0.5)";
         return hintColor;
+    }
+
+    function GetAnnotationFontStyle() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const annotationFontStyle : string = cfg.get("fontStyle") || "italic";
+        return annotationFontStyle;
+    }
+
+    function GetAnnotationFontWeight() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const annotationFontWeight : string = cfg.get("fontWeight") || "normal";
+        return annotationFontWeight;
+    }
+
+    function GetAnnotationMargin() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const annotationMargin : string = cfg.get("fontMargin") || "40px";
+        return annotationMargin;
+    }
+
+    function GetAnnotationPrefix() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        let annotationPrefix : string | undefined = cfg.get("errorMsgPrefix");
+        if( !annotationPrefix )
+        {
+            annotationPrefix = "";
+        }
+        return annotationPrefix;
+    }
+
+    function GetEnabledDiagnosticLevels() : string[]
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const enabledDiagnosticLevels : string[] = cfg.get("enabledDiagnosticLevels") || ["error", "warning"];
+        return enabledDiagnosticLevels;
     }
 
     function IsErrorLevelEnabled()
     {
-        if( enabledDiagnosticLevels )
-        {
-            return( enabledDiagnosticLevels.indexOf("error") >= 0 );
-        }
-        return( true );
+        return( GetEnabledDiagnosticLevels().indexOf("error") >= 0 );
     }
 
     function IsWarningLevelEnabled()
     {
-        if( enabledDiagnosticLevels )
-        {
-            return( enabledDiagnosticLevels.indexOf("warning") >= 0 );
-        }
-        return( true );
+        return( GetEnabledDiagnosticLevels().indexOf("warning") >= 0 );
     }
 
     function IsInfoLevelEnabled()
     {
-        if( enabledDiagnosticLevels )
-        {
-            return( enabledDiagnosticLevels.indexOf("info") >= 0 );
-        }
-        return( true );
+        return( GetEnabledDiagnosticLevels().indexOf("info") >= 0 );
     }
 
     function IsHintLevelEnabled()
     {
-        if( enabledDiagnosticLevels )
-        {
-            return( enabledDiagnosticLevels.indexOf("hint") >= 0 );
-        }
-        return( true );
+        return( GetEnabledDiagnosticLevels().indexOf("hint") >= 0 );
     }
 
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
@@ -233,7 +248,7 @@ export function activate(context: vscode.ExtensionContext) {
         for ( key in aggregatedDiagnostics )       // Iterate over property values (not names)
         {
             let aggregatedDiagnostic = aggregatedDiagnostics[key];
-            let messagePrefix : string = errorMsgPrefix ? errorMsgPrefix : "";
+            let messagePrefix : string = GetAnnotationPrefix();
 
             if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
             {
@@ -264,24 +279,25 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            let decorationColor;
+            let decorationBackgroundColor;
             switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
             {
                 // Error
                 case 0:
-                    decorationColor = GetErrorColor();
+                    decorationBackgroundColor = GetErrorBackgroundColor();
                     break;
                 // Warning
                 case 1:
-                    decorationColor = GetWarningColor();
+                    decorationBackgroundColor = GetWarningBackgroundColor();
                     break;
                 // Info
                 case 2:
-                    decorationColor = GetInfoColor();
+                    decorationBackgroundColor = GetInfoBackgroundColor();
                     break;
                 // Hint
                 case 3:
-                    decorationColor = GetHintColor();
+                default:
+                    decorationBackgroundColor = GetHintBackgroundColor();
                     break;
             }
 
@@ -290,10 +306,10 @@ export function activate(context: vscode.ExtensionContext) {
             const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
                 after: {
                     contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
-                    fontStyle: errorLensFontStyle,
-                    fontWeight: errorLensFontWeight,
-                    margin: errorLensMargin,
-                    backgroundColor: decorationColor
+                    fontStyle: GetAnnotationFontStyle(),
+                    fontWeight: GetAnnotationFontWeight(),
+                    margin: GetAnnotationMargin(),
+                    backgroundColor: decorationBackgroundColor
                 }
             };
 
