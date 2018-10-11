@@ -308,80 +308,69 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let decorationBackgroundColor, decorationTextColor;
-            switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
-            {
-                // Error
-                case 0:
-                    decorationBackgroundColor = GetErrorBackgroundColor();
-                    decorationTextColor = GetErrorTextColor();
-                    break;
-                // Warning
-                case 1:
-                    decorationBackgroundColor = GetWarningBackgroundColor();
-                    decorationTextColor = GetWarningTextColor();
-                    break;
-                // Info
-                case 2:
-                    decorationBackgroundColor = GetInfoBackgroundColor();
-                    decorationTextColor = GetInfoTextColor();
-                    break;
-                // Hint
-                case 3:
-                default:
-                    decorationBackgroundColor = GetHintBackgroundColor();
-                    decorationTextColor = GetHintTextColor();
-                    break;
-            }
-
-            // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
-            // after the source-code line in the editor, and text rendering options.
-            const decInstanceRenderOptions : vscode.DecorationInstanceRenderOptions = {
-                after: {
-                    contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
-                    fontStyle: GetAnnotationFontStyle(),
-                    fontWeight: GetAnnotationFontWeight(),
-                    margin: GetAnnotationMargin(),
-                    color: decorationTextColor,
-                    backgroundColor: decorationBackgroundColor
-                }
-            };
-
-            // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
-            const diagnosticDecorationOptions : vscode.DecorationOptions = {
-                range: aggregatedDiagnostic.arrayDiagnostics[0].range,
-                renderOptions: decInstanceRenderOptions
-            };
-
+            let addErrorLens = false;
             switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
             {
                 // Error
                 case 0:
                     if( IsErrorLevelEnabled() )
                     {
-                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                        addErrorLens = true;
+                        decorationBackgroundColor = GetErrorBackgroundColor();
+                        decorationTextColor = GetErrorTextColor();
                     }
                     break;
                 // Warning
                 case 1:
                     if( IsWarningLevelEnabled() )
                     {
-                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                        addErrorLens = true;
+                        decorationBackgroundColor = GetWarningBackgroundColor();
+                        decorationTextColor = GetWarningTextColor();
                     }
                     break;
                 // Info
                 case 2:
                     if( IsInfoLevelEnabled() )
                     {
-                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                        addErrorLens = true;
+                        decorationBackgroundColor = GetInfoBackgroundColor();
+                        decorationTextColor = GetInfoTextColor();
                     }
                     break;
                 // Hint
                 case 3:
                     if( IsHintLevelEnabled() )
                     {
-                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                        addErrorLens = true;
+                        decorationBackgroundColor = GetHintBackgroundColor();
+                        decorationTextColor = GetHintTextColor();
                     }
                     break;
+            }
+
+            if (addErrorLens)
+            {
+                // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
+                // after the source-code line in the editor, and text rendering options.
+                const decInstanceRenderOptions: vscode.DecorationInstanceRenderOptions = {
+                    after: {
+                        contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
+                        fontStyle: GetAnnotationFontStyle(),
+                        fontWeight: GetAnnotationFontWeight(),
+                        margin: GetAnnotationMargin(),
+                        color: decorationTextColor,
+                        backgroundColor: decorationBackgroundColor
+                    }
+                };
+
+                // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
+                const diagnosticDecorationOptions: vscode.DecorationOptions = {
+                    range: aggregatedDiagnostic.arrayDiagnostics[0].range,
+                    renderOptions: decInstanceRenderOptions
+                };
+
+                errorLensDecorationOptions.push(diagnosticDecorationOptions);
             }
         }
 
