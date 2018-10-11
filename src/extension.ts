@@ -21,6 +21,43 @@ export function activate(context: vscode.ExtensionContext) {
     const errorLensFontWeight : string = config.get("fontWeight") || "normal";
     const errorLensMargin : string = config.get("fontMargin") || "40px";
     const errorMsgPrefix : string | undefined = config.get("errorMsgPrefix");
+    const enabledDiagnosticLevels : string[] | undefined = config.get("enabledDiagnosticLevels") || ["error", "warning"];
+
+    function IsErrorLevelEnabled()
+    {
+        if( enabledDiagnosticLevels )
+        {
+            return( enabledDiagnosticLevels.indexOf("error") >= 0 );
+        }
+        return( true );
+    }
+
+    function IsWarningLevelEnabled()
+    {
+        if( enabledDiagnosticLevels )
+        {
+            return( enabledDiagnosticLevels.indexOf("warning") >= 0 );
+        }
+        return( true );
+    }
+
+    function IsInfoLevelEnabled()
+    {
+        if( enabledDiagnosticLevels )
+        {
+            return( enabledDiagnosticLevels.indexOf("info") >= 0 );
+        }
+        return( true );
+    }
+
+    function IsHintLevelEnabled()
+    {
+        if( enabledDiagnosticLevels )
+        {
+            return( enabledDiagnosticLevels.indexOf("hint") >= 0 );
+        }
+        return( true );
+    }
 
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
 
@@ -243,19 +280,31 @@ export function activate(context: vscode.ExtensionContext) {
             {
                 // Error
                 case 0:
-                    errorLensDecorationOptionsError.push(diagnosticDecorationOptions);
+                    if( IsErrorLevelEnabled() )
+                    {
+                        errorLensDecorationOptionsError.push(diagnosticDecorationOptions);
+                    }
                     break;
                 // Warning
                 case 1:
-                    errorLensDecorationOptionsWarning.push(diagnosticDecorationOptions);
+                    if( IsWarningLevelEnabled() )
+                    {
+                        errorLensDecorationOptionsWarning.push(diagnosticDecorationOptions);
+                    }
                     break;
                 // Info
                 case 2:
-                    errorLensDecorationOptionsInfo.push(diagnosticDecorationOptions);
+                    if( IsInfoLevelEnabled() )
+                    {
+                        errorLensDecorationOptionsInfo.push(diagnosticDecorationOptions);
+                    }
                     break;
                 // Hint
                 case 3:
-                    errorLensDecorationOptionsHint.push(diagnosticDecorationOptions);
+                    if( IsHintLevelEnabled() )
+                    {
+                        errorLensDecorationOptionsHint.push(diagnosticDecorationOptions);
+                    }
                     break;
             }
         }

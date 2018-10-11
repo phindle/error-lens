@@ -4,6 +4,9 @@
 	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
 	"version": "1.0.0",
 	"publisher": "PhilHindle",
+	"author": {
+		"name": "Phil Hindle"
+	},
 	"engines": {
 		"vscode": "^1.24.0"
 	},
@@ -34,37 +37,27 @@
 		"configuration": {
 			"properties": {
 				"errorLens.errorColor": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "rgba(240,10,0,0.5)",
 					"description": "The background color used to highlight lines containing errors. (Alpha is used)"
 				},
 				"errorLens.warningColor": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "rgba(180,150,0,0.5)",
 					"description": "The background color used to highlight lines containing warnings. (Alpha is used)"
 				},
 				"errorLens.infoColor": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "rgba(240,200,0,0.5)",
 					"description": "The background color used to highlight lines containing info. (Alpha is used)"
 				},
 				"errorLens.hintColor": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "rgba(20,100,0,0.5)",
 					"description": "The background color used to highlight lines containing hints. (Alpha is used)"
 				},
 				"errorLens.fontStyle": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"enum": [
 						"normal",
 						"italic"
@@ -73,9 +66,7 @@
 					"description": "Show ErrorLens annotations in Italics, or not?"
 				},
 				"errorLens.fontWeight": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"enum": [
 						"normal",
 						"bold"
@@ -84,18 +75,21 @@
 					"description": "Show ErrorLens annotations in Bold or not?"
 				},
 				"errorLens.fontMargin": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "40px",
 					"description": "Distance between end of the code line, and the start of the ErrorLens annotation."
 				},
 				"errorLens.errorMsgPrefix": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": "! ",
 					"description": "A customizable prefix string, which is added at the start of the ErrorLens annotation."
+				},
+				"errorLens.enabledDiagnosticLevels": {
+					"type": "array",
+					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are: 'error', 'warning', 'info' & 'hint'",
+					"default": [
+						"error", "warning", "info", "hint"
+					]
 				}
 			}
 		}
