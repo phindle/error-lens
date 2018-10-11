@@ -18,11 +18,25 @@ export function activate(context: vscode.ExtensionContext) {
         return errorColor;
     }
 
+    function GetErrorTextColor() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const errorTextColor : string = cfg.get("errorTextColor") || "rgba(240,240,240,1.0)";
+        return errorTextColor;
+    }
+
     function GetWarningBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
         const warningColor : string = cfg.get("warningColor") || "rgba(200,100,0,0.5)";
         return warningColor;
+    }
+
+    function GetWarningTextColor() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const warningTextColor : string = cfg.get("warningTextColor") || "rgba(240,240,240,1.0)";
+        return warningTextColor;
     }
 
     function GetInfoBackgroundColor() : string
@@ -32,11 +46,25 @@ export function activate(context: vscode.ExtensionContext) {
         return infoColor;
     }
 
+    function GetInfoTextColor() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const infoTextColor : string = cfg.get("infoTextColor") || "rgba(240,240,240,1.0)";
+        return infoTextColor;
+    }
+
     function GetHintBackgroundColor() : string
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
         const hintColor : string = cfg.get("hintColor") || "rgba(20,120,40,0.5)";
         return hintColor;
+    }
+
+    function GetHintTextColor() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const hintTextColor : string = cfg.get("hintTextColor") || "rgba(240,240,240,1.0)";
+        return hintTextColor;
     }
 
     function GetAnnotationFontStyle() : string
@@ -279,25 +307,29 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            let decorationBackgroundColor;
+            let decorationBackgroundColor, decorationTextColor;
             switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
             {
                 // Error
                 case 0:
                     decorationBackgroundColor = GetErrorBackgroundColor();
+                    decorationTextColor = GetErrorTextColor();
                     break;
                 // Warning
                 case 1:
                     decorationBackgroundColor = GetWarningBackgroundColor();
+                    decorationTextColor = GetWarningTextColor();
                     break;
                 // Info
                 case 2:
                     decorationBackgroundColor = GetInfoBackgroundColor();
+                    decorationTextColor = GetInfoTextColor();
                     break;
                 // Hint
                 case 3:
                 default:
                     decorationBackgroundColor = GetHintBackgroundColor();
+                    decorationTextColor = GetHintTextColor();
                     break;
             }
 
@@ -309,6 +341,7 @@ export function activate(context: vscode.ExtensionContext) {
                     fontStyle: GetAnnotationFontStyle(),
                     fontWeight: GetAnnotationFontWeight(),
                     margin: GetAnnotationMargin(),
+                    color: decorationTextColor,
                     backgroundColor: decorationBackgroundColor
                 }
             };
