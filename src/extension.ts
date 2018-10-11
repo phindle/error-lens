@@ -87,19 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
 
-    let errorLensDecorationTypeError: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-        isWholeLine: true
-    });
-
-    let errorLensDecorationTypeWarning: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-        isWholeLine: true
-    });
-
-    let errorLensDecorationTypeInfo: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-        isWholeLine: true
-    });
-
-    let errorLensDecorationTypeHint: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+    let errorLensDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         isWholeLine: true
     });
 
@@ -181,10 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
-        const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
-        const errorLensDecorationOptionsInfo: vscode.DecorationOptions[] = [];
-        const errorLensDecorationOptionsHint: vscode.DecorationOptions[] = [];
+        const errorLensDecorationOptions: vscode.DecorationOptions[] = [];
         let numErrors = 0;
         let numWarnings = 0;
 
@@ -324,38 +309,35 @@ export function activate(context: vscode.ExtensionContext) {
                 case 0:
                     if( IsErrorLevelEnabled() )
                     {
-                        errorLensDecorationOptionsError.push(diagnosticDecorationOptions);
+                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
                     }
                     break;
                 // Warning
                 case 1:
                     if( IsWarningLevelEnabled() )
                     {
-                        errorLensDecorationOptionsWarning.push(diagnosticDecorationOptions);
+                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
                     }
                     break;
                 // Info
                 case 2:
                     if( IsInfoLevelEnabled() )
                     {
-                        errorLensDecorationOptionsInfo.push(diagnosticDecorationOptions);
+                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
                     }
                     break;
                 // Hint
                 case 3:
                     if( IsHintLevelEnabled() )
                     {
-                        errorLensDecorationOptionsHint.push(diagnosticDecorationOptions);
+                        errorLensDecorationOptions.push(diagnosticDecorationOptions);
                     }
                     break;
             }
         }
 
-        // The errorLensDecorationOptions* object(s) have been built, now apply them.
-        activeTextEditor.setDecorations(errorLensDecorationTypeError, errorLensDecorationOptionsError);
-        activeTextEditor.setDecorations(errorLensDecorationTypeWarning, errorLensDecorationOptionsWarning);
-        activeTextEditor.setDecorations(errorLensDecorationTypeInfo, errorLensDecorationOptionsInfo);
-        activeTextEditor.setDecorations(errorLensDecorationTypeHint, errorLensDecorationOptionsHint);
+        // The errorLensDecorationOptions array has been built, now apply them.
+        activeTextEditor.setDecorations(errorLensDecorationType, errorLensDecorationOptions);
 
         // console.log( "updateDecorationsForUri() : errors + warnings = " + (numErrors + numWarnings) );
 
