@@ -88,8 +88,15 @@
 				"errorLens.fontWeight": {
 					"type": "string",
 					"enum": [
+					  	"100",
+					  	"200",
+					  	"300",
 						"normal",
-						"bold"
+						"500",
+						"600",
+						"700",
+						"800",
+						"900"
 					],
 					"default": "normal",
 					"description": "Show ErrorLens annotations in Bold or not?"
