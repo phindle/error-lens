@@ -88,9 +88,9 @@
 				"errorLens.fontWeight": {
 					"type": "string",
 					"enum": [
-					  	"100",
-					  	"200",
-					  	"300",
+						"100",
+						"200",
+						"300",
 						"normal",
 						"500",
 						"600",
@@ -113,10 +113,23 @@
 				},
 				"errorLens.enabledDiagnosticLevels": {
 					"type": "array",
-					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are: 'error', 'warning', 'info' & 'hint'",
+					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are any or all of: 'error', 'warning', 'info' & 'hint'",
 					"default": [
-						"error", "warning", "info", "hint"
+						"error",
+						"warning",
+						"info",
+						"hint"
 					]
+				},
+				"errorLens.statusBarControl": {
+					"type": "string",
+					"enum": [
+						"always",
+						"never",
+						"hide-when-no-issues"
+					],
+					"description": "Specify when the ErrorLens status bar text should be shown.",
+					"default": "hide-when-no-issues"
 				}
 			}
 		}
