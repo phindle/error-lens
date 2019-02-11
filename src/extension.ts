@@ -126,6 +126,13 @@ export function activate(context: vscode.ExtensionContext) {
         return( GetEnabledDiagnosticLevels().indexOf("hint") >= 0 );
     }
 
+    function GetStatusBarControl() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const statusBarControl : string = cfg.get("statusBarControl") || "hide-when-no-issues";
+        return statusBarControl;
+    }
+
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -384,46 +391,63 @@ export function activate(context: vscode.ExtensionContext) {
         // The errorLensDecorationOptions array has been built, now apply them.
         activeTextEditor.setDecorations(errorLensDecorationType, errorLensDecorationOptions);
 
-        // console.log( "updateDecorationsForUri() : errors + warnings = " + (numErrors + numWarnings) );
-
-        if( numErrors + numWarnings === 0 )
-        {
-            updateStatusBar("ErrorLens: No errors or warnings" );
-        }
-        else
-        {
-            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s)." );
-        }
+        updateStatusBar(numErrors, numWarnings);
     }
 
 
 
     /**
-     * Update the Visual Studio Code status bar
+     * Update the Visual Studio Code status bar, showing the number of warnings and/or errors.
+     * Control over when (or if) to show the ErrorLens info in the status bar is controlled via the
+     * errorLens.statusBarControl configuration property.
      *
-     * @param {string} statusBarText - Text to show in the Status Bar.
+     * @param {number} numErrors - The number of error diagnostics reported.
+     * @param {number} numWarnings - The number of warning diagnostics reported.
      */
-    function updateStatusBar( statusBarText : string ) {
+    function updateStatusBar(numErrors: number, numWarnings: number) {
         // Create _statusBarItem if needed
-        if (!_statusBarItem)
-        {
+        if (!_statusBarItem) {
             _statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        const statusBarControl = GetStatusBarControl();
+        var showStatusBarText = false;
+        if (statusBarControl === 'always') {
+            showStatusBarText = true;
+        }
+        else if (statusBarControl === 'never') {
+            showStatusBarText = false;
+        }
+        else if (statusBarControl === 'hide-when-no-issues') {
+            if (numErrors + numWarnings === 0) {
+                showStatusBarText = false;
+            }
+            else {
+                showStatusBarText = true;
+            }
+        }
 
-        if (!activeTextEditor)
-        {
-            // No open text editor
+
+        const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
+        if (!activeTextEditor || showStatusBarText === false) {
+            // No open text editor or don't want to show ErrorLens info.
             _statusBarItem.hide();
         }
-        else
-        {
+        else {
+            let statusBarText: string;
+
+            if (numErrors + numWarnings === 0) {
+                statusBarText = "ErrorLens: No errors or warnings";
+            }
+            else {
+                statusBarText = "$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s).";
+            }
+
             _statusBarItem.text = statusBarText;
 
             _statusBarItem.show();
         }
-
     }
 }
 
