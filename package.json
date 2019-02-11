@@ -34,18 +34,28 @@
 	],
 	"main": "./out/extension",
 	"contributes": {
-		"configuration": {
+		"colors": [
+			{
+				"id": "errorLens.errorColor",
+				"description": "The background color used to highlight lines containing errors. (Alpha is used).",
+				"defaults": {
+					"dark": "foreground",
+					"light": "foreground",
+					"highContrast": "#010203"
+				}
+			},
+			{
+				"id": "errorLens.errorTextColor",
+				"description": "The text color used to highlight lines containing errors. (Alpha is used).",
+				"defaults": {
+					"dark": "foreground",
+					"light": "foreground",
+					"highContrast": "#010203"
+				}
+			}
+		],
+	"configuration": {
 			"properties": {
-				"errorLens.errorColor": {
-					"type": "string",
-					"default": "rgba(240,10,0,0.3)",
-					"description": "The background color used to highlight lines containing errors. (Alpha is used)"
-				},
-				"errorLens.errorTextColor": {
-					"type": "string",
-					"default": "rgba(240,240,240,1.0)",
-					"description": "The text color used to highlight lines containing errors. (Alpha is used)"
-				},
 				"errorLens.warningColor": {
 					"type": "string",
 					"default": "rgba(180,150,0,0.3)",
@@ -88,9 +98,9 @@
 				"errorLens.fontWeight": {
 					"type": "string",
 					"enum": [
-					  	"100",
-					  	"200",
-					  	"300",
+						"100",
+						"200",
+						"300",
 						"normal",
 						"500",
 						"600",
@@ -115,7 +125,10 @@
 					"type": "array",
 					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are: 'error', 'warning', 'info' & 'hint'",
 					"default": [
-						"error", "warning", "info", "hint"
+						"error",
+						"warning",
+						"info",
+						"hint"
 					]
 				}
 			}
