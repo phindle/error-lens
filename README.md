@@ -41,6 +41,12 @@ This extension contributes the following settings:
 * `errorLens.statusBarControl`: Customize how the VS Code Status Bar shows errors and warnings.
 * `errorLens.addAnnotationTextPrefixes`: If 'true', prefixes the diagnostic severity ('Error:', 'Warning:' etc) to ErrorLens annotations.
 
+## Extension Commands
+
+This extension contributes the following commands:
+
+* `ErrorLens.enable`: Enable ErrorLens.
+* `ErrorLens.disable`: Disable ErrorLens.
 
 ## Contributing & contacting the author
 
