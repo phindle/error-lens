@@ -41,6 +41,6 @@ All notable changes to the "errorlens" extension will be documented in this file
 
 - Added a configuration property (`errorLens.addAnnotationTextPrefixes`) which controls whether to prefix diagnostic severity to the ErrorLens annotations. (Implements https://github.com/phindle/error-lens/issues/9).
 
-- Added command to enable and disable ErrorLens at will. Implements request https://github.com/phindle/error-lens/issues/3.
+- Added command to enable and disable ErrorLens on-demand. Implements request https://github.com/phindle/error-lens/issues/3.
 	2 commands are available from the command palette: _Enable ErrorLens_ and _Disable ErrorLens_.
 	These commands do not have any default keyboard bindings.
