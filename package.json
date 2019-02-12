@@ -99,17 +99,12 @@
 						"900"
 					],
 					"default": "normal",
-					"description": "Show ErrorLens annotations in Bold or not?"
+					"description": "Specifies the font weight for ErrorLens annotations."
 				},
 				"errorLens.fontMargin": {
 					"type": "string",
 					"default": "40px",
-					"description": "Distance between end of the code line, and the start of the ErrorLens annotation."
-				},
-				"errorLens.errorMsgPrefix": {
-					"type": "string",
-					"default": "! ",
-					"description": "A customizable prefix string, which is added at the start of the ErrorLens annotation."
+					"description": "Distance between end of the code line, and the start of the ErrorLens annotation. (CSS units)."
 				},
 				"errorLens.enabledDiagnosticLevels": {
 					"type": "array",
@@ -130,6 +125,10 @@
 					],
 					"description": "Specify when the ErrorLens status bar text should be shown.",
 					"default": "hide-when-no-issues"
+				},
+				"errorLens.addAnnotationTextPrefixes": {
+					"description": "If 'true', prefixes the diagnostic severity ('Error:', 'Warning:' etc) to ErrorLens annotations.",
+					"default": true
 				}
 			}
 		}

@@ -88,17 +88,6 @@ export function activate(context: vscode.ExtensionContext) {
         return annotationMargin;
     }
 
-    function GetAnnotationPrefix() : string
-    {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        let annotationPrefix : string | undefined = cfg.get("errorMsgPrefix");
-        if( !annotationPrefix )
-        {
-            annotationPrefix = "";
-        }
-        return annotationPrefix;
-    }
-
     function GetEnabledDiagnosticLevels() : string[]
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
@@ -131,6 +120,13 @@ export function activate(context: vscode.ExtensionContext) {
         const cfg = vscode.workspace.getConfiguration("errorLens");
         const statusBarControl : string = cfg.get("statusBarControl") || "hide-when-no-issues";
         return statusBarControl;
+    }
+
+    function AddAnnotationTextPrefixes() : boolean
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const addAnnotationTextPrefixes : boolean = cfg.get("addAnnotationTextPrefixes") || false;
+        return addAnnotationTextPrefixes;
     }
 
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
@@ -290,34 +286,34 @@ export function activate(context: vscode.ExtensionContext) {
         for ( key in aggregatedDiagnostics )       // Iterate over property values (not names)
         {
             let aggregatedDiagnostic = aggregatedDiagnostics[key];
-            let messagePrefix : string = GetAnnotationPrefix();
+            let addMessagePrefix: boolean = AddAnnotationTextPrefixes();
+            let messagePrefix: string = "";
 
-            if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
-            {
-                // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
-                messagePrefix += "Diagnostic #1 of " + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
-            }
-            else
-            {
-                // If only 1 diagnostic for this source line, show the diagnostic severity
-                switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
-                {
-                    case 0:
-                        messagePrefix += "Error: ";
-                        break;
+            if (addMessagePrefix) {
+                if (aggregatedDiagnostic.arrayDiagnostics.length > 1) {
+                    // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
+                    messagePrefix += "Diagnostic 1/" + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
+                }
+                else {
+                    // If only 1 diagnostic for this source line, show the diagnostic severity
+                    switch (aggregatedDiagnostic.arrayDiagnostics[0].severity) {
+                        case 0:
+                            messagePrefix += "Error: ";
+                            break;
 
-                    case 1:
-                        messagePrefix += "Warning: ";
-                        break;
+                        case 1:
+                            messagePrefix += "Warning: ";
+                            break;
 
-                    case 2:
-                        messagePrefix += "Info: ";
-                        break;
+                        case 2:
+                            messagePrefix += "Info: ";
+                            break;
 
-                    case 3:
-                    default:
-                        messagePrefix += "Hint: ";
-                        break;
+                        case 3:
+                        default:
+                            messagePrefix += "Hint: ";
+                            break;
+                    }
                 }
             }
 
@@ -426,7 +422,6 @@ export function activate(context: vscode.ExtensionContext) {
                 showStatusBarText = true;
             }
         }
-
 
         const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
 
