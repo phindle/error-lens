@@ -7,9 +7,33 @@ import * as vscode from 'vscode';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     let _statusBarItem: vscode.StatusBarItem;
+    let errorLensEnabled: boolean = true;
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     console.log('Visual Studio Code Extension "errorlens" is now active');
+
+    // Commands are defined in the package.json file
+    let disposableEnableErrorLens = vscode.commands.registerCommand('ErrorLens.enable', () => {
+        errorLensEnabled = true;
+
+        const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if (activeTextEditor) {
+            updateDecorationsForUri(activeTextEditor.document.uri);
+        }
+    });
+
+    context.subscriptions.push(disposableEnableErrorLens);
+
+    let disposableDisableErrorLens = vscode.commands.registerCommand('ErrorLens.disable', () => {
+        errorLensEnabled = false;
+
+        const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if (activeTextEditor) {
+            updateDecorationsForUri(activeTextEditor.document.uri);
+        }
+    });
+
+    context.subscriptions.push(disposableDisableErrorLens);
 
     function GetErrorBackgroundColor() : string
     {
@@ -88,17 +112,6 @@ export function activate(context: vscode.ExtensionContext) {
         return annotationMargin;
     }
 
-    function GetAnnotationPrefix() : string
-    {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        let annotationPrefix : string | undefined = cfg.get("errorMsgPrefix");
-        if( !annotationPrefix )
-        {
-            annotationPrefix = "";
-        }
-        return annotationPrefix;
-    }
-
     function GetEnabledDiagnosticLevels() : string[]
     {
         const cfg = vscode.workspace.getConfiguration("errorLens");
@@ -126,6 +139,20 @@ export function activate(context: vscode.ExtensionContext) {
         return( GetEnabledDiagnosticLevels().indexOf("hint") >= 0 );
     }
 
+    function GetStatusBarControl() : string
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const statusBarControl : string = cfg.get("statusBarControl") || "hide-when-no-issues";
+        return statusBarControl;
+    }
+
+    function AddAnnotationTextPrefixes() : boolean
+    {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const addAnnotationTextPrefixes : boolean = cfg.get("addAnnotationTextPrefixes") || false;
+        return addAnnotationTextPrefixes;
+    }
+
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -139,6 +166,13 @@ export function activate(context: vscode.ExtensionContext) {
     // Note: URIs for onDidOpenTextDocument() can contain schemes other than file:// (such as git://)
 	vscode.workspace.onDidOpenTextDocument(textDocument => { updateDecorationsForUri( textDocument.uri ); }, null, context.subscriptions );
 
+    // Update on editor switch.
+    vscode.window.onDidChangeActiveTextEditor(textEditor => {
+        if (textEditor === undefined) {
+            return;
+        }
+        updateDecorationsForUri(textEditor.document.uri );
+    }, null, context.subscriptions);
 
     /**
      * Invoked by onDidChangeDiagnostics() when the language diagnostics change.
@@ -235,188 +269,196 @@ export function activate(context: vscode.ExtensionContext) {
         //     }
         // };
 
-        let aggregatedDiagnostics : any = {};
-        let diagnostic : vscode.Diagnostic;
+        if (errorLensEnabled) {
+            let aggregatedDiagnostics: any = {};
+            let diagnostic: vscode.Diagnostic;
 
-        // Iterate over each diagnostic that VS Code has reported for this file. For each one, add to
-        // a list of objects, grouping together diagnostics which occur on a single line.
-        for ( diagnostic of vscode.languages.getDiagnostics( uriToDecorate ) )
-        {
-            let key = "line" + diagnostic.range.start.line;
+            // Iterate over each diagnostic that VS Code has reported for this file. For each one, add to
+            // a list of objects, grouping together diagnostics which occur on a single line.
+            for (diagnostic of vscode.languages.getDiagnostics(uriToDecorate)) {
+                let key = "line" + diagnostic.range.start.line;
 
-            if( aggregatedDiagnostics[key] )
-            {
-                // Already added an object for this key, so augment the arrayDiagnostics[] array.
-                aggregatedDiagnostics[key].arrayDiagnostics.push( diagnostic );
-            }
-            else
-            {
-                // Create a new object for this key, specifying the line: and a arrayDiagnostics[] array
-                aggregatedDiagnostics[key] = {
-                    line: diagnostic.range.start.line,
-                    arrayDiagnostics: [ diagnostic ]
-                };
-            }
+                if (aggregatedDiagnostics[key]) {
+                    // Already added an object for this key, so augment the arrayDiagnostics[] array.
+                    aggregatedDiagnostics[key].arrayDiagnostics.push(diagnostic);
+                }
+                else {
+                    // Create a new object for this key, specifying the line: and a arrayDiagnostics[] array
+                    aggregatedDiagnostics[key] = {
+                        line: diagnostic.range.start.line,
+                        arrayDiagnostics: [diagnostic]
+                    };
+                }
 
-            switch (diagnostic.severity)
-            {
-                case 0:
-                    numErrors += 1;
-                    break;
-
-                case 1:
-                    numWarnings += 1;
-                    break;
-
-                // Ignore other severities.
-            }
-        }
-
-        let key : any;
-        for ( key in aggregatedDiagnostics )       // Iterate over property values (not names)
-        {
-            let aggregatedDiagnostic = aggregatedDiagnostics[key];
-            let messagePrefix : string = GetAnnotationPrefix();
-
-            if( aggregatedDiagnostic.arrayDiagnostics.length > 1 )
-            {
-                // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
-                messagePrefix += "Diagnostic #1 of " + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
-            }
-            else
-            {
-                // If only 1 diagnostic for this source line, show the diagnostic severity
-                switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
-                {
+                switch (diagnostic.severity) {
                     case 0:
-                        messagePrefix += "Error: ";
+                        numErrors += 1;
                         break;
 
                     case 1:
-                        messagePrefix += "Warning: ";
+                        numWarnings += 1;
                         break;
 
-                    case 2:
-                        messagePrefix += "Info: ";
-                        break;
-
-                    case 3:
-                    default:
-                        messagePrefix += "Hint: ";
-                        break;
+                    // Ignore other severities.
                 }
             }
 
-            let decorationBackgroundColor, decorationTextColor;
-            let addErrorLens = false;
-            switch (aggregatedDiagnostic.arrayDiagnostics[0].severity)
+            let key: any;
+            for (key in aggregatedDiagnostics)       // Iterate over property values (not names)
             {
-                // Error
-                case 0:
-                    if( IsErrorLevelEnabled() )
-                    {
-                        addErrorLens = true;
-                        decorationBackgroundColor = GetErrorBackgroundColor();
-                        decorationTextColor = GetErrorTextColor();
-                    }
-                    break;
-                // Warning
-                case 1:
-                    if( IsWarningLevelEnabled() )
-                    {
-                        addErrorLens = true;
-                        decorationBackgroundColor = GetWarningBackgroundColor();
-                        decorationTextColor = GetWarningTextColor();
-                    }
-                    break;
-                // Info
-                case 2:
-                    if( IsInfoLevelEnabled() )
-                    {
-                        addErrorLens = true;
-                        decorationBackgroundColor = GetInfoBackgroundColor();
-                        decorationTextColor = GetInfoTextColor();
-                    }
-                    break;
-                // Hint
-                case 3:
-                    if( IsHintLevelEnabled() )
-                    {
-                        addErrorLens = true;
-                        decorationBackgroundColor = GetHintBackgroundColor();
-                        decorationTextColor = GetHintTextColor();
-                    }
-                    break;
-            }
+                let aggregatedDiagnostic = aggregatedDiagnostics[key];
+                let addMessagePrefix: boolean = AddAnnotationTextPrefixes();
+                let messagePrefix: string = "";
 
-            if (addErrorLens)
-            {
-                // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
-                // after the source-code line in the editor, and text rendering options.
-                const decInstanceRenderOptions: vscode.DecorationInstanceRenderOptions = {
-                    after: {
-                        contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
-                        fontStyle: GetAnnotationFontStyle(),
-                        fontWeight: GetAnnotationFontWeight(),
-                        margin: GetAnnotationMargin(),
-                        color: decorationTextColor,
-                        backgroundColor: decorationBackgroundColor
+                if (addMessagePrefix) {
+                    if (aggregatedDiagnostic.arrayDiagnostics.length > 1) {
+                        // If > 1 diagnostic for this source line, the prefix is "Diagnostic #1 of N: "
+                        messagePrefix += "Diagnostic 1/" + aggregatedDiagnostic.arrayDiagnostics.length + ": ";
                     }
-                };
+                    else {
+                        // If only 1 diagnostic for this source line, show the diagnostic severity
+                        switch (aggregatedDiagnostic.arrayDiagnostics[0].severity) {
+                            case 0:
+                                messagePrefix += "Error: ";
+                                break;
 
-                // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
-                const diagnosticDecorationOptions: vscode.DecorationOptions = {
-                    range: aggregatedDiagnostic.arrayDiagnostics[0].range,
-                    renderOptions: decInstanceRenderOptions
-                };
+                            case 1:
+                                messagePrefix += "Warning: ";
+                                break;
 
-                errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                            case 2:
+                                messagePrefix += "Info: ";
+                                break;
+
+                            case 3:
+                            default:
+                                messagePrefix += "Hint: ";
+                                break;
+                        }
+                    }
+                }
+
+                let decorationBackgroundColor, decorationTextColor;
+                let addErrorLens = false;
+                switch (aggregatedDiagnostic.arrayDiagnostics[0].severity) {
+                    // Error
+                    case 0:
+                        if (IsErrorLevelEnabled()) {
+                            addErrorLens = true;
+                            decorationBackgroundColor = GetErrorBackgroundColor();
+                            decorationTextColor = GetErrorTextColor();
+                        }
+                        break;
+                    // Warning
+                    case 1:
+                        if (IsWarningLevelEnabled()) {
+                            addErrorLens = true;
+                            decorationBackgroundColor = GetWarningBackgroundColor();
+                            decorationTextColor = GetWarningTextColor();
+                        }
+                        break;
+                    // Info
+                    case 2:
+                        if (IsInfoLevelEnabled()) {
+                            addErrorLens = true;
+                            decorationBackgroundColor = GetInfoBackgroundColor();
+                            decorationTextColor = GetInfoTextColor();
+                        }
+                        break;
+                    // Hint
+                    case 3:
+                        if (IsHintLevelEnabled()) {
+                            addErrorLens = true;
+                            decorationBackgroundColor = GetHintBackgroundColor();
+                            decorationTextColor = GetHintTextColor();
+                        }
+                        break;
+                }
+
+                if (addErrorLens) {
+                    // Generate a DecorationInstanceRenderOptions object which specifies the text which will be rendered
+                    // after the source-code line in the editor, and text rendering options.
+                    const decInstanceRenderOptions: vscode.DecorationInstanceRenderOptions = {
+                        after: {
+                            contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
+                            fontStyle: GetAnnotationFontStyle(),
+                            fontWeight: GetAnnotationFontWeight(),
+                            margin: GetAnnotationMargin(),
+                            color: decorationTextColor,
+                            backgroundColor: decorationBackgroundColor
+                        }
+                    };
+
+                    // See type 'DecorationOptions': https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationOptions
+                    const diagnosticDecorationOptions: vscode.DecorationOptions = {
+                        range: aggregatedDiagnostic.arrayDiagnostics[0].range,
+                        renderOptions: decInstanceRenderOptions
+                    };
+
+                    errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                }
             }
         }
 
         // The errorLensDecorationOptions array has been built, now apply them.
         activeTextEditor.setDecorations(errorLensDecorationType, errorLensDecorationOptions);
 
-        // console.log( "updateDecorationsForUri() : errors + warnings = " + (numErrors + numWarnings) );
-
-        if( numErrors + numWarnings === 0 )
-        {
-            updateStatusBar("ErrorLens: No errors or warnings" );
-        }
-        else
-        {
-            updateStatusBar("$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s)." );
-        }
+        updateStatusBar(numErrors, numWarnings);
     }
 
 
 
     /**
-     * Update the Visual Studio Code status bar
+     * Update the Visual Studio Code status bar, showing the number of warnings and/or errors.
+     * Control over when (or if) to show the ErrorLens info in the status bar is controlled via the
+     * errorLens.statusBarControl configuration property.
      *
-     * @param {string} statusBarText - Text to show in the Status Bar.
+     * @param {number} numErrors - The number of error diagnostics reported.
+     * @param {number} numWarnings - The number of warning diagnostics reported.
      */
-    function updateStatusBar( statusBarText : string ) {
+    function updateStatusBar(numErrors: number, numWarnings: number) {
         // Create _statusBarItem if needed
-        if (!_statusBarItem)
-        {
+        if (!_statusBarItem) {
             _statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-
-        if (!activeTextEditor)
+        const statusBarControl = GetStatusBarControl();
+        var showStatusBarText = false;
+        if( errorLensEnabled )
         {
-            // No open text editor
+            if (statusBarControl === 'always') {
+                showStatusBarText = true;
+            }
+            else if (statusBarControl === 'never') {
+                showStatusBarText = false;
+            }
+            else if (statusBarControl === 'hide-when-no-issues') {
+                if (numErrors + numWarnings > 0) {
+                    showStatusBarText = true;
+                }
+            }
+        }
+
+        const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
+        if (!activeTextEditor || showStatusBarText === false) {
+            // No open text editor or don't want to show ErrorLens info.
             _statusBarItem.hide();
         }
-        else
-        {
+        else {
+            let statusBarText: string;
+
+            if (numErrors + numWarnings === 0) {
+                statusBarText = "ErrorLens: No errors or warnings";
+            }
+            else {
+                statusBarText = "$(bug) ErrorLens: " + numErrors + " error(s) and " + numWarnings + " warning(s).";
+            }
+
             _statusBarItem.text = statusBarText;
 
             _statusBarItem.show();
         }
-
     }
 }
 

@@ -34,6 +34,18 @@
 	],
 	"main": "./out/extension",
 	"contributes": {
+		"commands": [
+			{
+				"command": "ErrorLens.enable",
+				"title": "Enable ErrorLens",
+				"category": "ErrorLens"
+			},
+			{
+				"command": "ErrorLens.disable",
+				"title": "Disable ErrorLens",
+				"category": "ErrorLens"
+			}
+		],
 		"configuration": {
 			"properties": {
 				"errorLens.errorColor": {
@@ -88,9 +100,9 @@
 				"errorLens.fontWeight": {
 					"type": "string",
 					"enum": [
-					  	"100",
-					  	"200",
-					  	"300",
+						"100",
+						"200",
+						"300",
 						"normal",
 						"500",
 						"600",
@@ -99,24 +111,36 @@
 						"900"
 					],
 					"default": "normal",
-					"description": "Show ErrorLens annotations in Bold or not?"
+					"description": "Specifies the font weight for ErrorLens annotations."
 				},
 				"errorLens.fontMargin": {
 					"type": "string",
 					"default": "40px",
-					"description": "Distance between end of the code line, and the start of the ErrorLens annotation."
-				},
-				"errorLens.errorMsgPrefix": {
-					"type": "string",
-					"default": "! ",
-					"description": "A customizable prefix string, which is added at the start of the ErrorLens annotation."
+					"description": "Distance between end of the code line, and the start of the ErrorLens annotation. (CSS units)."
 				},
 				"errorLens.enabledDiagnosticLevels": {
 					"type": "array",
-					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are: 'error', 'warning', 'info' & 'hint'",
+					"description": "Specify which diagnostic levels are enhanced. e.g. [ 'error', 'warning' ]. Valid values are any or all of: 'error', 'warning', 'info' & 'hint'",
 					"default": [
-						"error", "warning", "info", "hint"
+						"error",
+						"warning",
+						"info",
+						"hint"
 					]
+				},
+				"errorLens.statusBarControl": {
+					"type": "string",
+					"enum": [
+						"always",
+						"never",
+						"hide-when-no-issues"
+					],
+					"description": "Specify when the ErrorLens status bar text should be shown.",
+					"default": "hide-when-no-issues"
+				},
+				"errorLens.addAnnotationTextPrefixes": {
+					"description": "If 'true', prefixes the diagnostic severity ('Error:', 'Warning:' etc) to ErrorLens annotations.",
+					"default": true
 				}
 			}
 		}
