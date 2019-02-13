@@ -2,7 +2,7 @@
 	"name": "errorlens",
 	"displayName": "ErrorLens",
 	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"publisher": "PhilHindle",
 	"author": {
 		"name": "Phil Hindle"
