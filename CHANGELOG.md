@@ -1,15 +1,17 @@
 # Change Log
-All notable changes to the "errorlens" extension will be documented in this file.
+
+All notable changes to the ErrorLens extension will be documented in this file.
 
 ## 1.0.0
 
 - Initial release of ErrorLens (October 2018)
 
 ## 1.1.0
+
 - Released February 2019.
 - This release contains some new features and fixes some bugs.
 - Additional font weight options. (Thank you to Oleg Orlov for the PR).
-- Changes to the errorLens settings will be reloaded without restarting VS Code. (Hot reload).
+- Changes to the ErrorLens settings will be reloaded without restarting VS Code. (Hot reload).
 - Implement the ability to configure which diagnostic levels are shown (Addresses issue #1: https://github.com/phindle/error-lens/issues/1).
   Configured via `errorlens.enabledDiagnosticLevels` in the settings.
 
