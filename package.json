@@ -139,6 +139,7 @@
 					"default": "hide-when-no-issues"
 				},
 				"errorLens.addAnnotationTextPrefixes": {
+					"type": "boolean",
 					"description": "If 'true', prefixes the diagnostic severity ('Error:', 'Warning:' etc) to ErrorLens annotations.",
 					"default": true
 				}
