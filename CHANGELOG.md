@@ -2,10 +2,6 @@
 
 All notable changes to the ErrorLens extension will be documented in this file.
 
-## 1.0.0
-
-- Initial release of ErrorLens (October 2018)
-
 ## 1.1.0
 
 - Released February 2019.
@@ -23,16 +19,16 @@ All notable changes to the ErrorLens extension will be documented in this file.
   This addresses issue #4 (https://github.com/phindle/error-lens/issues/4).
   For example, to configure the background and text colour for errors:
 ```
-				"errorLens.errorColor": {
-					"type": "string",
-					"default": "rgba(240,10,0,0.3)",
-					"description": "The background color used to highlight lines containing errors. (Alpha is used)"
-				},
-				"errorLens.errorTextColor": {
-					"type": "string",
-					"default": "rgba(240,240,240,1.0)",
-					"description": "The text color used to highlight lines containing errors. (Alpha is used)"
-				},
+"errorLens.errorColor": {
+	"type": "string",
+	"default": "rgba(240,10,0,0.3)",
+	"description": "The background color used to highlight lines containing errors. (Alpha is used)"
+},
+"errorLens.errorTextColor": {
+	"type": "string",
+	"default": "rgba(240,240,240,1.0)",
+	"description": "The text color used to highlight lines containing errors. (Alpha is used)"
+},
 ```
 
 - More responsive when switching between tabs and editors. (Fix for https://github.com/phindle/error-lens/issues/8)
@@ -46,3 +42,7 @@ All notable changes to the ErrorLens extension will be documented in this file.
 - Added command to enable and disable ErrorLens on-demand. Implements request https://github.com/phindle/error-lens/issues/3.
 	2 commands are available from the command palette: _Enable ErrorLens_ and _Disable ErrorLens_.
 	These commands do not have any default keyboard bindings.
+
+## 1.0.0
+
+- Initial release of ErrorLens (October 2018)
