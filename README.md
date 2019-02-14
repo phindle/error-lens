@@ -50,7 +50,7 @@ This extension contributes the following commands:
 
 ## Contributing & contacting the author
 
-The project is hosted on Github at: https://github.com/phindle/error-lens. Please submit suggestions, bug reports, Pull Requests and so on here.
+The project is hosted on Github at: <https://github.com/phindle/error-lens>. Please submit suggestions, bug reports, Pull Requests and so on here.
 
 I'm occasionally on Twitter @GeekyMcGeekface
 
@@ -60,12 +60,14 @@ None known.
 
 ## Release Notes
 
-### 1.0.0
-
-Initial release of ErrorLens (October 2018)
+Please refer to CHANGELOG.md for more details.
 
 ### 1.1.0
 
-Second release of ErrorLens (February 2019). Please refer to CHANGELOG.md for more details.
+Second release of ErrorLens (February 2019).
 
-*NOTE*: Configuration property `errorLens.errorMsgPrefix` has been removed. The reason is that this was somewhat unnecessary, and just added noise to the annotations. (cf. https://github.com/phindle/error-lens/issues/9)
+*NOTE*: Configuration property `errorLens.errorMsgPrefix` has been removed. The reason is that this was somewhat unnecessary, and just added noise to the annotations. (cf. <https://github.com/phindle/error-lens/issues/9>)
+
+### 1.0.0
+
+Initial release of ErrorLens (October 2018)
