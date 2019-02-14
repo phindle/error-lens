@@ -2,7 +2,7 @@
 	"name": "errorlens",
 	"displayName": "ErrorLens",
 	"description": "Improve the highlighting of errors, warnings and other language diagnostics.",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"publisher": "PhilHindle",
 	"author": {
 		"name": "Phil Hindle"
@@ -50,7 +50,7 @@
 			"properties": {
 				"errorLens.errorColor": {
 					"type": "string",
-					"default": "rgba(240,10,0,0.3)",
+					"default": "rgba(240,0,0,0.4)",
 					"description": "The background color used to highlight lines containing errors. (Alpha is used)"
 				},
 				"errorLens.errorTextColor": {
@@ -60,7 +60,7 @@
 				},
 				"errorLens.warningColor": {
 					"type": "string",
-					"default": "rgba(180,150,0,0.3)",
+					"default": "rgba(180,180,0,0.4)",
 					"description": "The background color used to highlight lines containing warnings. (Alpha is used)"
 				},
 				"errorLens.warningTextColor": {
@@ -70,7 +70,7 @@
 				},
 				"errorLens.infoColor": {
 					"type": "string",
-					"default": "rgba(240,200,0,0.3)",
+					"default": "rgba(0,200,0,0.4)",
 					"description": "The background color used to highlight lines containing info. (Alpha is used)"
 				},
 				"errorLens.infoTextColor": {
@@ -80,7 +80,7 @@
 				},
 				"errorLens.hintColor": {
 					"type": "string",
-					"default": "rgba(20,100,0,0.3)",
+					"default": "rgba(20,140,140,0.4)",
 					"description": "The background color used to highlight lines containing hints. (Alpha is used)"
 				},
 				"errorLens.hintTextColor": {
