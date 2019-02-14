@@ -157,8 +157,21 @@ export function activate(context: vscode.ExtensionContext) {
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
 
-    let errorLensDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-        isWholeLine: true
+    let errorLensDecorationTypeError: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: GetErrorBackgroundColor()
+    });
+    let errorLensDecorationTypeWarning: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: GetWarningBackgroundColor()
+    });
+    let errorLensDecorationTypeInfo: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: GetInfoBackgroundColor()
+    });
+    let errorLensDecorationTypeHint: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: GetHintBackgroundColor()
     });
 
     vscode.languages.onDidChangeDiagnostics(diagnosticChangeEvent => { onChangedDiagnostics(diagnosticChangeEvent); }, null, context.subscriptions );
@@ -246,7 +259,10 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const errorLensDecorationOptions: vscode.DecorationOptions[] = [];
+        const errorLensDecorationOptionsError: vscode.DecorationOptions[] = [];
+        const errorLensDecorationOptionsWarning: vscode.DecorationOptions[] = [];
+        const errorLensDecorationOptionsInfo: vscode.DecorationOptions[] = [];
+        const errorLensDecorationOptionsHint: vscode.DecorationOptions[] = [];
         let numErrors = 0;
         let numWarnings = 0;
 
@@ -304,10 +320,10 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let key: any;
+            let addMessagePrefix: boolean = AddAnnotationTextPrefixes();
             for (key in aggregatedDiagnostics)       // Iterate over property values (not names)
             {
                 let aggregatedDiagnostic = aggregatedDiagnostics[key];
-                let addMessagePrefix: boolean = AddAnnotationTextPrefixes();
                 let messagePrefix: string = "";
 
                 if (addMessagePrefix) {
@@ -338,14 +354,13 @@ export function activate(context: vscode.ExtensionContext) {
                     }
                 }
 
-                let decorationBackgroundColor, decorationTextColor;
+                let decorationTextColor;
                 let addErrorLens = false;
                 switch (aggregatedDiagnostic.arrayDiagnostics[0].severity) {
                     // Error
                     case 0:
                         if (IsErrorLevelEnabled()) {
                             addErrorLens = true;
-                            decorationBackgroundColor = GetErrorBackgroundColor();
                             decorationTextColor = GetErrorTextColor();
                         }
                         break;
@@ -353,7 +368,6 @@ export function activate(context: vscode.ExtensionContext) {
                     case 1:
                         if (IsWarningLevelEnabled()) {
                             addErrorLens = true;
-                            decorationBackgroundColor = GetWarningBackgroundColor();
                             decorationTextColor = GetWarningTextColor();
                         }
                         break;
@@ -361,7 +375,6 @@ export function activate(context: vscode.ExtensionContext) {
                     case 2:
                         if (IsInfoLevelEnabled()) {
                             addErrorLens = true;
-                            decorationBackgroundColor = GetInfoBackgroundColor();
                             decorationTextColor = GetInfoTextColor();
                         }
                         break;
@@ -369,7 +382,6 @@ export function activate(context: vscode.ExtensionContext) {
                     case 3:
                         if (IsHintLevelEnabled()) {
                             addErrorLens = true;
-                            decorationBackgroundColor = GetHintBackgroundColor();
                             decorationTextColor = GetHintTextColor();
                         }
                         break;
@@ -384,8 +396,7 @@ export function activate(context: vscode.ExtensionContext) {
                             fontStyle: GetAnnotationFontStyle(),
                             fontWeight: GetAnnotationFontWeight(),
                             margin: GetAnnotationMargin(),
-                            color: decorationTextColor,
-                            backgroundColor: decorationBackgroundColor
+                            color: decorationTextColor
                         }
                     };
 
@@ -394,14 +405,34 @@ export function activate(context: vscode.ExtensionContext) {
                         range: aggregatedDiagnostic.arrayDiagnostics[0].range,
                         renderOptions: decInstanceRenderOptions
                     };
-
-                    errorLensDecorationOptions.push(diagnosticDecorationOptions);
+                    
+                    switch (aggregatedDiagnostic.arrayDiagnostics[0].severity) {
+                        // Error
+                        case 0:
+                            errorLensDecorationOptionsError.push(diagnosticDecorationOptions);
+                            break;
+                        // Warning
+                        case 1:
+                            errorLensDecorationOptionsWarning.push(diagnosticDecorationOptions);
+                            break;
+                        // Info
+                        case 2:
+                            errorLensDecorationOptionsInfo.push(diagnosticDecorationOptions);
+                            break;
+                        // Hint
+                        case 3:
+                            errorLensDecorationOptionsHint.push(diagnosticDecorationOptions);
+                            break;
+                    }
                 }
             }
         }
 
-        // The errorLensDecorationOptions array has been built, now apply them.
-        activeTextEditor.setDecorations(errorLensDecorationType, errorLensDecorationOptions);
+        // The errorLensDecorationOptions<X> arrays have been built, now apply them.
+        activeTextEditor.setDecorations(errorLensDecorationTypeError, errorLensDecorationOptionsError);
+        activeTextEditor.setDecorations(errorLensDecorationTypeWarning, errorLensDecorationOptionsWarning);
+        activeTextEditor.setDecorations(errorLensDecorationTypeInfo, errorLensDecorationOptionsInfo);
+        activeTextEditor.setDecorations(errorLensDecorationTypeHint, errorLensDecorationOptionsHint);
 
         updateStatusBar(numErrors, numWarnings);
     }
