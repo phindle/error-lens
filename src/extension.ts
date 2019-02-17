@@ -10,7 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
     let errorLensEnabled: boolean = true;
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
-    console.log('Visual Studio Code Extension "errorlens" is now active');
+    // console.log('Visual Studio Code Extension "errorlens" is now active');
 
     // Commands are defined in the package.json file
     let disposableEnableErrorLens = vscode.commands.registerCommand('ErrorLens.enable', () => {
@@ -196,14 +196,12 @@ export function activate(context: vscode.ExtensionContext) {
     {
         if( !vscode.window )
         {
-            console.log( "Exit onChangedDiagnostics() - !vscode.window" );
             return;
         }
 
         const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if( !activeTextEditor )
         {
-            console.log( "Exit onChangedDiagnostics() - !activeTextEditor" );
             return;
         }
         
@@ -230,7 +228,6 @@ export function activate(context: vscode.ExtensionContext) {
     function updateDecorationsForUri( uriToDecorate : vscode.Uri ) {
         if ( !uriToDecorate )
         {
-            console.log( "Exit updateDecorationsForUri() - uriToDecorate = empty" );
             return;
         }
 
@@ -242,20 +239,17 @@ export function activate(context: vscode.ExtensionContext) {
 
         if( !vscode.window )
         {
-            console.log( "Exit updateDecorationsForUri() - !vscode.window" );
             return;
         }
 
         const activeTextEditor : vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if( !activeTextEditor )
         {
-            console.log( "Exit updateDecorationsForUri() - !activeTextEditor" );
             return;
         }
 
         if ( !activeTextEditor.document.uri.fsPath )
         {
-            console.log( "Exit updateDecorationsForUri() - activeTextEditor.document.uri.fsPath = empty" );
             return;
         }
 
