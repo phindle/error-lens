@@ -380,7 +380,7 @@ export function activate(context: vscode.ExtensionContext) {
                     // after the source-code line in the editor, and text rendering options.
                     const decInstanceRenderOptions: vscode.DecorationInstanceRenderOptions = {
                         after: {
-                            contentText: messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message,
+                            contentText: truncate(messagePrefix + aggregatedDiagnostic.arrayDiagnostics[0].message),
                             fontStyle: GetAnnotationFontStyle(),
                             fontWeight: GetAnnotationFontWeight(),
                             margin: GetAnnotationMargin(),
@@ -459,6 +459,10 @@ export function activate(context: vscode.ExtensionContext) {
 
             _statusBarItem.show();
         }
+    }
+
+    function truncate(str: string): string {
+        return str.length > 300 ? str.slice(0, 300) + '…' : str;
     }
 }
 
