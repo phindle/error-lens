@@ -486,8 +486,17 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    
+    /**
+     * Truncate the supplied string to a constant number of characters. (This truncation
+     * limit is hard-coded, and may be changed only by editing the const inside this function).
+     *
+     * @param {string} str - The string to truncate.
+     * @returns {string} - The truncated string, if the string argument is over the hard-coded limit.
+     */
     function truncate(str: string): string {
-        return str.length > 300 ? str.slice(0, 300) + '…' : str;
+        const truncationLimit: number = 300;
+        return str.length > truncationLimit ? str.slice(0, truncationLimit) + '…' : str;
     }
 }
 
