@@ -2,6 +2,13 @@
 
 All notable changes to the ErrorLens extension will be documented in this file.
 
+## 1.1.3
+
+- Released 24th February 2019.
+- Various minor fixes.
+- Remove superfluous console.log() calls.
+- Truncate very long messages.
+
 ## 1.1.2
 
 - Released 14th February 2019. (Valentine's Day Edition).
