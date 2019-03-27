@@ -153,6 +153,12 @@ export function activate(context: vscode.ExtensionContext) {
         return addAnnotationTextPrefixes;
     }
 
+    function GetExclude() : Exclude {
+        const cfg = vscode.workspace.getConfiguration("errorLens");
+        const exclude : Exclude = cfg.get("exclude") || [];
+        return exclude;
+    }
+
     // Create decorator types that we use to amplify lines containing errors, warnings, info, etc.
     // createTextEditorDecorationType() ref. @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#window.createTextEditorDecorationType
     // DecorationRenderOptions ref.  @ https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -282,10 +288,25 @@ export function activate(context: vscode.ExtensionContext) {
         if (errorLensEnabled) {
             let aggregatedDiagnostics: any = {};
             let diagnostic: vscode.Diagnostic;
+            const exclude: Exclude = GetExclude();
 
             // Iterate over each diagnostic that VS Code has reported for this file. For each one, add to
             // a list of objects, grouping together diagnostics which occur on a single line.
+            nextDiagnostic:
             for (diagnostic of vscode.languages.getDiagnostics(uriToDecorate)) {
+                // Exclude items specified in `errorLens.exclude` setting
+                for (const excludeItem of exclude) {
+                    if (typeof excludeItem === 'string') {
+                        if (new RegExp(excludeItem, 'i').test(diagnostic.message)) {
+                            continue nextDiagnostic;
+                        }
+                    } else if (isObject(excludeItem)) {
+                        if (diagnostic.source === excludeItem.source &&
+                            String(diagnostic.code) === excludeItem.code) {
+                            continue nextDiagnostic;
+                        }
+                    }
+                }
                 let key = "line" + diagnostic.range.start.line;
 
                 if (aggregatedDiagnostics[key]) {
@@ -498,7 +519,17 @@ export function activate(context: vscode.ExtensionContext) {
         const truncationLimit: number = 300;
         return str.length > truncationLimit ? str.slice(0, truncationLimit) + '…' : str;
     }
+
+    function isObject(x: any) : boolean {
+        return typeof x === 'object' && x !== null;
+    }
 }
+
+interface IExcludeObject {
+    code: string;
+    source: string;
+}
+type Exclude = (string | IExcludeObject)[];
 
 // this method is called when your extension is deactivated
 export function deactivate() {

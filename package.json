@@ -142,6 +142,27 @@
 					"type": "boolean",
 					"description": "If 'true', prefixes the diagnostic severity ('Error:', 'Warning:' etc) to ErrorLens annotations.",
 					"default": true
+				},
+				"errorLens.exclude": {
+					"type": "array",
+					"items": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"code": {
+										"type": "string"
+									},
+									"source": {
+										"type": "string"
+									}
+								}
+							}
+						]
+					}
 				}
 			}
 		}
