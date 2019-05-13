@@ -476,7 +476,7 @@ export function activate(context: vscode.ExtensionContext) {
      * @returns {string} - The truncated string, if the string argument is over the hard-coded limit.
      */
     function truncate(str: string): string {
-        const truncationLimit: number = getConfig('errorLength');
+        const truncationLimit: number = getConfig('errorLength') || 300;
         return str.length > truncationLimit ? str.slice(0, truncationLimit) + '…' : str;
     }
 
