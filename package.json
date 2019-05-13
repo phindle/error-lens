@@ -48,6 +48,11 @@
 		],
 		"configuration": {
 			"properties": {
+				"errorLens.errorLength": {
+					"type": "integer",
+					"default": "300",
+					"description": "The error string length"
+				},
 				"errorLens.errorColor": {
 					"type": "string",
 					"default": "rgba(240,0,0,0.4)",
