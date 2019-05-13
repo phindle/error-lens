@@ -37,85 +37,73 @@ export function activate(context: vscode.ExtensionContext) {
 
     function GetErrorBackgroundColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const errorColor : string = cfg.get("errorColor") || "rgba(240,10,0,0.5)";
+        const errorColor : string = getConfig("errorColor") || "rgba(240,10,0,0.5)";
         return errorColor;
     }
 
     function GetErrorTextColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const errorTextColor : string = cfg.get("errorTextColor") || "rgba(240,240,240,1.0)";
+        const errorTextColor : string = getConfig("errorTextColor") || "rgba(240,240,240,1.0)";
         return errorTextColor;
     }
 
     function GetWarningBackgroundColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const warningColor : string = cfg.get("warningColor") || "rgba(200,100,0,0.5)";
+        const warningColor : string = getConfig("warningColor") || "rgba(200,100,0,0.5)";
         return warningColor;
     }
 
     function GetWarningTextColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const warningTextColor : string = cfg.get("warningTextColor") || "rgba(240,240,240,1.0)";
+        const warningTextColor : string = getConfig("warningTextColor") || "rgba(240,240,240,1.0)";
         return warningTextColor;
     }
 
     function GetInfoBackgroundColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const infoColor : string = cfg.get("infoColor") || "rgba(40,20,120,0.5)";
+        const infoColor : string = getConfig("infoColor") || "rgba(40,20,120,0.5)";
         return infoColor;
     }
 
     function GetInfoTextColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const infoTextColor : string = cfg.get("infoTextColor") || "rgba(240,240,240,1.0)";
+        const infoTextColor : string = getConfig("infoTextColor") || "rgba(240,240,240,1.0)";
         return infoTextColor;
     }
 
     function GetHintBackgroundColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const hintColor : string = cfg.get("hintColor") || "rgba(20,120,40,0.5)";
+        const hintColor : string = getConfig("hintColor") || "rgba(20,120,40,0.5)";
         return hintColor;
     }
 
     function GetHintTextColor() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const hintTextColor : string = cfg.get("hintTextColor") || "rgba(240,240,240,1.0)";
+        const hintTextColor : string = getConfig("hintTextColor") || "rgba(240,240,240,1.0)";
         return hintTextColor;
     }
 
     function GetAnnotationFontStyle() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const annotationFontStyle : string = cfg.get("fontStyle") || "italic";
+        const annotationFontStyle : string = getConfig("fontStyle") || "italic";
         return annotationFontStyle;
     }
 
     function GetAnnotationFontWeight() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const annotationFontWeight : string = cfg.get("fontWeight") || "normal";
+        const annotationFontWeight : string = getConfig("fontWeight") || "normal";
         return annotationFontWeight;
     }
 
     function GetAnnotationMargin() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const annotationMargin : string = cfg.get("fontMargin") || "40px";
+        const annotationMargin : string = getConfig("fontMargin") || "40px";
         return annotationMargin;
     }
 
     function GetEnabledDiagnosticLevels() : string[]
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const enabledDiagnosticLevels : string[] = cfg.get("enabledDiagnosticLevels") || ["error", "warning"];
+        const enabledDiagnosticLevels : string[] = getConfig("enabledDiagnosticLevels") || ["error", "warning"];
         return enabledDiagnosticLevels;
     }
 
@@ -141,15 +129,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     function GetStatusBarControl() : string
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const statusBarControl : string = cfg.get("statusBarControl") || "hide-when-no-issues";
+        const statusBarControl : string = getConfig("statusBarControl") || "hide-when-no-issues";
         return statusBarControl;
     }
 
     function AddAnnotationTextPrefixes() : boolean
     {
-        const cfg = vscode.workspace.getConfiguration("errorLens");
-        const addAnnotationTextPrefixes : boolean = cfg.get("addAnnotationTextPrefixes") || false;
+        const addAnnotationTextPrefixes : boolean = getConfig("addAnnotationTextPrefixes") || false;
         return addAnnotationTextPrefixes;
     }
 
@@ -216,8 +202,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     }
-
-
 
     /**
      * Update the editor decorations for the provided URI. Only if the URI scheme is "file" is the function
@@ -431,8 +415,6 @@ export function activate(context: vscode.ExtensionContext) {
         updateStatusBar(numErrors, numWarnings);
     }
 
-
-
     /**
      * Update the Visual Studio Code status bar, showing the number of warnings and/or errors.
      * Control over when (or if) to show the ErrorLens info in the status bar is controlled via the
@@ -486,7 +468,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    
     /**
      * Truncate the supplied string to a constant number of characters. (This truncation
      * limit is hard-coded, and may be changed only by editing the const inside this function).
@@ -495,11 +476,20 @@ export function activate(context: vscode.ExtensionContext) {
      * @returns {string} - The truncated string, if the string argument is over the hard-coded limit.
      */
     function truncate(str: string): string {
-        const truncationLimit: number = 300;
+        const truncationLimit: number = getConfig('errorLength');
         return str.length > truncationLimit ? str.slice(0, truncationLimit) + '…' : str;
+    }
+
+    /**
+     * return package config object
+     *
+     * @param {string} key - The config key to truncate.
+     * @returns {string} - The config key value.
+     */
+    function getConfig(key: string): string {
+        return vscode.workspace.getConfiguration("errorLens").get(key);
     }
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
-}
+export function deactivate() {}
