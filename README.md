@@ -12,6 +12,13 @@ the site of the line of code which is generating the diagnostic.
 
 ![ErrorLens example](images/Screenshot-1.png)
 
+## Deprecation Note
+
+Error Lens was originally conceived and developed by Phil Hindle.
+
+I no longer maintain this extension. A fork of this repo has been developed greatly since I stopped working on this in 2019. I recommend installing Alexander's fork of this extension from <https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens>
+(Repo URL for the extension is: <https://github.com/usernamehw/vscode-error-lens>)
+
 ## Features
 
 * Lines containing errors or warnings or info are highlighted more obviously.
